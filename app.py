@@ -19,6 +19,9 @@ else:
         print("Arduino Connected")
     except:
         arduino = None
+@app.route("/")
+def home():
+    return render_template("dashboard.html")
 @app.route("/scan_uid")
 def scan_uid():
 
