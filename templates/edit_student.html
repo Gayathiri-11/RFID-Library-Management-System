@@ -44,7 +44,6 @@
             background:#004d99;
         }
 
-        /* TOAST */
         #toast {
             visibility: hidden;
             min-width: 250px;
@@ -88,16 +87,20 @@
 <form method="POST">
 
 <label>Roll Number</label>
-<input type="text" name="roll_number" value="{{ student.roll_number }}" readonly>
+<input type="text" name="roll_number"
+       value="{{ student.roll_number }}" readonly>
 
 <label>Student Name</label>
-<input type="text" name="student_name" value="{{ student.student_name }}" required>
+<input type="text" name="student_name"
+       value="{{ student.student_name }}" required>
 
 <label>Department</label>
-<input type="text" name="department" value="{{ student.department }}" required>
+<input type="text" name="department"
+       value="{{ student.department }}" required>
 
 <label>Year</label>
-<input type="number" name="year" value="{{ student.year }}" required>
+<input type="number" name="year"
+       value="{{ student.year }}" required min="1" max="5">
 
 <button type="submit">Update Student</button>
 
@@ -105,12 +108,11 @@
 
 </div>
 
-<!-- Toast -->
 <div id="toast">Student Updated Successfully</div>
 
 <script>
 function showToast() {
-    var toast = document.getElementById("toast");
+    let toast = document.getElementById("toast");
     toast.classList.add("show");
 
     setTimeout(function() {
