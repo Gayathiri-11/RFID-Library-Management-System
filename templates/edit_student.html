@@ -43,6 +43,37 @@
         button:hover{
             background:#004d99;
         }
+
+        /* TOAST */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2s;
+        }
+
+        @keyframes fadein {
+            from { bottom: 0; opacity: 0; }
+            to { bottom: 30px; opacity: 1; }
+        }
+
+        @keyframes fadeout {
+            from { bottom: 30px; opacity: 1; }
+            to { bottom: 0; opacity: 0; }
+        }
     </style>
 </head>
 
@@ -74,45 +105,12 @@
 
 </div>
 
-<!-- TOAST -->
+<!-- Toast -->
 <div id="toast">Student Updated Successfully</div>
-
-<style>
-#toast {
-    visibility: hidden;
-    min-width: 250px;
-    background-color: #28a745;
-    color: white;
-    text-align: center;
-    border-radius: 8px;
-    padding: 16px;
-    position: fixed;
-    left: 50%;
-    bottom: 30px;
-    transform: translateX(-50%);
-    z-index: 1000;
-}
-
-#toast.show {
-    visibility: visible;
-    animation: fadein 0.5s, fadeout 0.5s 2s;
-}
-
-@keyframes fadein {
-    from { bottom: 0; opacity: 0; }
-    to { bottom: 30px; opacity: 1; }
-}
-
-@keyframes fadeout {
-    from { bottom: 30px; opacity: 1; }
-    to { bottom: 0; opacity: 0; }
-}
-</style>
 
 <script>
 function showToast() {
     var toast = document.getElementById("toast");
-
     toast.classList.add("show");
 
     setTimeout(function() {
@@ -127,5 +125,6 @@ function showToast() {
 showToast();
 </script>
 {% endif %}
+
 </body>
 </html>
