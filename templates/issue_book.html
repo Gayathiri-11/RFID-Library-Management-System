@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Issue Book</title>
+
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f9;
+            text-align:center;
+            margin:0;
+            padding:0;
+        }
+
+        .container{
+            width:400px;
+            margin:40px auto;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0px 0px 10px lightgray;
+        }
+
+        h1{
+            color:#003366;
+        }
+
+        input{
+            width:90%;
+            padding:10px;
+            margin:10px 0;
+            border:1px solid #ccc;
+            border-radius:5px;
+        }
+
+        button{
+            background:#0066cc;
+            color:white;
+            border:none;
+            padding:10px 20px;
+            border-radius:5px;
+            cursor:pointer;
+            margin:5px;
+        }
+
+        button:hover{
+            background:#004d99;
+        }
+
+        /* TOAST */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2s;
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+    </style>
+</head>
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+    <h1>Issue Book</h1>
+
+    <form method="POST">
+
+        <p><b>Book UID</b></p>
+
+        <input type="text" id="uid" name="uid" placeholder="Scan RFID Tag" required>
+
+        <button type="button" onclick="scanRFID()">Scan RFID</button>
+
+        <!-- STATUS MESSAGE (FIXED POSITION) -->
+        <p id="statusMsg" style="font-weight:bold;"></p>
+
+        <p><b>Student Roll Number</b></p>
+
+        <input type="text" name="roll_number" placeholder="Enter Roll Number" required>
+
+        <button type="submit">Issue Book</button>
+
+    </form>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+function scanRFID() {
+
+    fetch('/scan_uid')
+    .then(response => response.json())
+    .then(data => {
+
+        let uid = data.uid;
+        document.getElementById('uid').value = uid;
+
+        if (uid === "RFID_NOT_CONNECTED") {
+            alert("RFID not connected");
+            return;
+        }
+
+        // CHECK BOOK STATUS LIVE
+        fetch('/check_book/' + uid)
+        .then(res => res.json())
+        .then(book => {
+
+            let msg = document.getElementById("statusMsg");
+
+            if (book.status === "Available") {
+                msg.innerHTML = "🟢 Book is Available";
+                msg.style.color = "green";
+            }
+            else if (book.status === "Issued") {
+                msg.innerHTML = "🔴 Book Already Issued";
+                msg.style.color = "red";
+            }
+            else {
+                msg.innerHTML = "⚠ Book Not Found";
+                msg.style.color = "orange";
+            }
+
+        });
+
+    })
+    .catch(error => {
+        alert("RFID Scan Failed");
+    });
+}
+
+// TOAST FUNCTION
+function showToast(message, redirectUrl=null) {
+    var toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+        }
+
+    }, 2000);
+}
+</script>
+
+{% if message %}
+<script>
+    showToast("{{ message }}", "{{ redirect }}");
+</script>
+{% endif %}
+
+</body>
+</html>

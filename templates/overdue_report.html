@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Overdue Report</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:0;
+}
+.main{
+    margin-left:240px;
+    padding:20px;
+}
+
+.container{
+    width:100%;
+}
+
+h1{
+    text-align:center;
+    color:#003366;
+}
+
+/* FILTER BAR */
+.filter-bar{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:20px;
+}
+
+.filter-bar select,
+.filter-bar input{
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+.filter-bar button{
+    background:#003366;
+    color:white;
+    border:none;
+    padding:8px 15px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.filter-bar button:hover{
+    background:#0055aa;
+}
+
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    box-shadow:0px 0px 10px lightgray;
+}
+
+th{
+    background:#003366;
+    color:white;
+    padding:12px;
+}
+
+td{
+    padding:10px;
+    text-align:center;
+    border:1px solid #ddd;
+}
+
+tr:nth-child(even){
+    background:#f2f2f2;
+}
+
+.late{
+    color:red;
+    font-weight:bold;
+}
+
+</style>
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="main">
+
+    <h1>Overdue Books Report</h1>
+
+    <!-- Export Button -->
+    <div style="text-align:center; margin-bottom:15px;">
+
+        <a href="/export_overdue_report">
+            <button type="button">
+                Export to Excel
+            </button>
+        </a>
+
+    </div>
+
+    <!-- Filter Section -->
+    <form method="GET"
+          action="/overdue_report"
+          class="filter-bar">
+
+        <select name="department">
+            <option value="">All Departments</option>
+            <option value="CSE">CSE</option>
+            <option value="EEE">EEE</option>
+            <option value="ECE">ECE</option>
+        </select>
+
+        <input type="date" name="from_date">
+        <input type="date" name="to_date">
+
+        <input type="number"
+               name="min_fine"
+               placeholder="Min Fine">
+
+        <input type="number"
+               name="max_fine"
+               placeholder="Max Fine">
+
+        <button type="submit">
+            Filter
+        </button>
+
+    </form>
+
+    <!-- Table -->
+    <table>
+
+        <tr>
+            <th>UID</th>
+            <th>Roll Number</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Status</th>
+        </tr>
+
+        {% for book in books %}
+
+        <tr>
+            <td>{{ book.uid }}</td>
+            <td>{{ book.roll_number }}</td>
+            <td>{{ book.issue_date }}</td>
+            <td class="late">{{ book.due_date }}</td>
+            <td class="late">{{ book.status }}</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>

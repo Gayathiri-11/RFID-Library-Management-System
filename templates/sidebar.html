@@ -1,0 +1,68 @@
+<div class="sidebar">
+
+    <h2> LIBRARY</h2>
+
+    <a href="/dashboard"> Dashboard</a>
+
+    <div class="menu-title">BOOK MANAGEMENT</div>
+
+    <a href="/add_book"> Add Book</a>
+    <a href="/books"> View Books</a>
+    <a href="/issue_book"> Issue Book</a>
+    <a href="/return_book"> Return Book</a>
+
+    <div class="menu-title">STUDENT MANAGEMENT</div>
+
+    <a href="/add_student"> Add Student</a>
+    <a href="/students"> View Students</a>
+    <a href="/bulk_student_management"> Bulk Upload</a>
+    <a href="/inactive_students"> Inactive Students</a>
+
+    <div class="menu-title">REPORTS</div>
+
+    <a href="/transactions"> Transactions</a>
+    <a href="/overdue_report"> Overdue Report</a>
+    <a href="/reports"> Reports Dashboard</a>
+
+    <div class="menu-title">ACCOUNT</div>
+
+    <a href="/logout"> Logout</a>
+
+ </div>
+<style>
+.sidebar{
+    width:230px;
+    height:100vh;
+    background:#003366;
+    position:fixed;
+    left:0;
+    top:0;
+    overflow-y:auto;
+    padding-top:20px;
+}
+
+.sidebar h2{
+    color:white;
+    text-align:center;
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:12px 20px;
+}
+
+.sidebar a:hover{
+    background:#0055aa;
+}
+
+.menu-title{
+    color:#ffd700;
+    font-size:12px;
+    font-weight:bold;
+    padding:15px 20px 5px;
+    border-top:1px solid rgba(255,255,255,0.2);
+    margin-top:10px;
+}
+</style>

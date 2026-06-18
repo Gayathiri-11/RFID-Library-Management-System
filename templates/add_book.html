@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Add Book</title>
+
+<style>
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f6f9;
+        margin:0;
+        padding:0;
+    }
+    .container{
+     width:450px;
+     background:white;
+     padding:30px;
+     border-radius:10px;
+     box-shadow:0px 0px 10px lightgray;
+
+     position:absolute;
+     top:50%;
+     left:calc(50% + 110px);
+     transform:translate(-50%, -50%);
+    }
+    h1{
+        text-align:center;
+        color:#003366;
+    }
+
+    label{
+        font-weight:bold;
+    }
+
+    input{
+        width:100%;
+        padding:10px;
+        margin-top:5px;
+        margin-bottom:15px;
+        border:1px solid #ccc;
+        border-radius:5px;
+        box-sizing:border-box;
+    }
+
+    button{
+        width:100%;
+        background:#0066cc;
+        color:white;
+        padding:12px;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+        font-size:16px;
+        margin-top:10px;
+    }
+
+    button:hover{
+        background:#004d99;
+    }
+
+    .scan-btn{
+        background:#28a745;
+    }
+
+    .scan-btn:hover{
+        background:#218838;
+    }
+
+    #toast {
+        visibility: hidden;
+        min-width: 250px;
+        background-color: #28a745;
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        bottom: 30px;
+        transform: translateX(-50%);
+    }
+
+    #toast.show {
+        visibility: visible;
+        animation: fadein 0.5s, fadeout 0.5s 2s;
+    }
+
+    @keyframes fadein {
+        from {bottom:0; opacity:0;}
+        to {bottom:30px; opacity:1;}
+    }
+
+    @keyframes fadeout {
+        from {bottom:30px; opacity:1;}
+        to {bottom:0; opacity:0;}
+    }
+</style>
+
+
+</head>
+
+<body>
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+    <h1>Add Book</h1>
+
+    <form method="POST">
+
+        <label>RFID UID</label>
+
+        <input
+            type="text"
+            id="uid"
+            name="uid"
+            placeholder="Scan RFID or Enter UID Manually"
+            required
+        >
+
+        <button
+            type="button"
+            class="scan-btn"
+            onclick="scanRFID()">
+            Scan RFID
+        </button>
+
+        <button
+            type="button"
+            onclick="manualRFID()">
+            Enter UID Manually
+        </button>
+
+        <label>Book Number</label>
+        <input type="text" name="book_number" required>
+
+        <label>Book Name</label>
+        <input type="text" name="book_name" required>
+
+        <label>Author</label>
+        <input type="text" name="author" required>
+
+        <button
+            type="submit"
+            onclick="return confirm('Are you sure you want to add this book?')">
+            Save Book
+        </button>
+
+    </form>
+
+</div>
+<div id="toast">Book Added Successfully</div>
+
+<script>
+
+function scanRFID() {
+
+    fetch('/scan_uid')
+    .then(response => response.json())
+    .then(data => {
+
+        if(data.uid === "RFID_NOT_CONNECTED"){
+            alert("RFID Reader Not Connected");
+            return;
+        }
+
+        document.getElementById('uid').value = data.uid;
+
+    })
+    .catch(error => {
+
+        alert("RFID Scan Failed");
+
+    });
+
+}
+
+function manualRFID() {
+
+    let uid = prompt("Enter RFID UID:");
+
+    if(uid){
+        document.getElementById("uid").value = uid;
+    }
+
+}
+
+function showToast() {
+
+    var toast = document.getElementById("toast");
+
+    toast.classList.add("show");
+
+    setTimeout(function() {
+
+        toast.classList.remove("show");
+        window.location.href = "/books";
+
+    }, 2000);
+
+}
+
+</script>
+
+{% if success %}
+
+<script>
+showToast();
+</script>
+
+{% endif %}
+
+</body>
+</html>

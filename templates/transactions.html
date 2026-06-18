@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transactions</title>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f9;
+            margin:0;
+            padding:0;
+        }
+
+        .container{
+         margin-left:240px;
+          padding:20px;
+       }
+
+        h1{
+            text-align:center;
+            color:#003366;
+        }
+
+        .download-btn{
+            text-align:center;
+            margin-bottom:20px;
+        }
+
+        .download-btn button{
+            background:#28a745;
+            color:white;
+            border:none;
+            padding:12px 20px;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:15px;
+        }
+
+        .download-btn button:hover{
+            background:#218838;
+        }
+        .overdue {
+            background-color: #ffcccc !important;
+            color: #b30000;
+            font-weight: bold;
+        }
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+            box-shadow:0px 0px 10px lightgray;
+        }
+
+        th{
+            background:#003366;
+            color:white;
+            padding:12px;
+        }
+
+        td{
+            padding:10px;
+            text-align:center;
+            border:1px solid #ddd;
+        }
+
+        tr:nth-child(even){
+            background:#f2f2f2;
+        }
+
+        .issued{
+            color:red;
+            font-weight:bold;
+        }
+
+        .returned{
+            color:green;
+            font-weight:bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+    <h1>Book Transactions</h1>
+
+    <div class="download-btn">
+        <a href="/export_transactions">
+            <button>Download Excel Report</button>
+        </a>
+    </div>
+
+    <table>
+
+        <tr>
+            <th>UID</th>
+            <th>Roll Number</th>
+            <th>Issue Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+            <th>Fine</th>
+        </tr>
+
+        {% for t in transactions %}
+       <tr class="{% if t.is_overdue %}overdue{% endif %}">
+
+         <tr>
+
+            <td>{{ t.uid }}</td>
+
+            <td>{{ t.roll_number }}</td>
+
+            <td>{{ t.issue_date }}</td>
+
+            <td>
+                {% if t.return_date %}
+                    {{ t.return_date }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td>
+                {% if t.status == 'Issued' %}
+                    <span class="issued">Issued</span>
+                {% else %}
+                    <span class="returned">Returned</span>
+                {% endif %}
+            </td>
+
+            <td>₹{{ t.fine }}</td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>

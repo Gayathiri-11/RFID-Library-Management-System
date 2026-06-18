@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library Reports Dashboard</title>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f9;
+            margin:0;
+            padding:0;
+        }
+
+        .container{
+            margin-left:240px;
+            padding:20px;
+        }
+
+        h1{
+            text-align:center;
+            color:#003366;
+            margin-bottom:30px;
+        }
+
+        .cards{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:20px;
+        }
+
+        .card{
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            text-align:center;
+            box-shadow:0 0 10px lightgray;
+        }
+
+        .card h3{
+            color:#003366;
+            margin-bottom:10px;
+        }
+
+        .card h1{
+            margin:0;
+            color:#009933;
+        }
+
+        .section{
+            margin-top:40px;
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 10px lightgray;
+        }
+
+        .section h2{
+            color:#003366;
+            margin-top:0;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:15px;
+        }
+
+        th{
+            background:#003366;
+            color:white;
+            padding:12px;
+        }
+
+        td{
+            padding:10px;
+            border:1px solid #ddd;
+            text-align:center;
+        }
+
+        tr:nth-child(even){
+            background:#f2f2f2;
+        }
+
+        .green{
+            color:green;
+            font-weight:bold;
+        }
+
+        .red{
+            color:red;
+            font-weight:bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+    <h1>Library Reports Dashboard</h1>
+
+    <div class="section">
+
+        <h2>System Summary</h2>
+
+        <table>
+
+            <tr>
+                <th>Metric</th>
+                <th>Count</th>
+            </tr>
+
+            <tr>
+                <td>Total Books</td>
+                <td>{{ total_books }}</td>
+            </tr>
+
+            <tr>
+                <td>Available Books</td>
+                <td class="green">{{ available_books }}</td>
+            </tr>
+
+            <tr>
+                <td>Issued Books</td>
+                <td class="red">{{ issued_books }}</td>
+            </tr>
+
+            <tr>
+                <td>Total Students</td>
+                <td>{{ total_students }}</td>
+            </tr>
+
+            <tr>
+                <td>Total Fine Collected</td>
+                <td>₹{{ total_fine }}</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>

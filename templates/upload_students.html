@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Students</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+        }
+
+        .box {
+            width: 400px;
+            margin: 80px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px lightgray;
+            text-align: center;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #003366;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0055aa;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <h2>Upload Students (Excel)</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <input type="file" name="file" accept=".xlsx" required>
+
+        <button type="submit">Upload</button>
+
+    </form>
+
+</div>
+
+{% if success %}
+<script>
+alert("Students uploaded successfully!");
+window.location.href = "/students";
+</script>
+{% endif %}
+
+</body>
+</html>

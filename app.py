@@ -1,0 +1,866 @@
+from flask import Flask, render_template, request, redirect, send_file
+import mysql.connector
+from datetime import datetime, timedelta
+import serial
+import os
+import time
+import pandas as pd
+from database.db import get_connection
+from flask import url_for
+
+app = Flask(__name__)
+
+if os.environ.get("RENDER"):
+    arduino = None
+else:
+    try:
+        arduino = serial.Serial('COM5', 9600, timeout=1)
+        time.sleep(2)
+        print("Arduino Connected")
+    except:
+        arduino = None
+@app.route("/scan_uid")
+def scan_uid():
+
+    if arduino is None:
+        return {"uid": "RFID_NOT_CONNECTED"}
+
+    uid = arduino.readline().decode().strip()
+
+    return {"uid": uid}
+
+def get_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="Nanmai@2006",
+        database="RFID_LIBRARY"
+    )
+@app.route("/login", methods=["GET", "POST"])
+def login():
+
+    if request.method == "POST":
+
+        username = request.form["username"]
+        password = request.form["password"]
+
+        try:
+            conn = get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            cursor.execute(
+                "SELECT * FROM users WHERE username=%s",
+                (username,)
+            )
+
+            user = cursor.fetchone()
+            conn.close()
+
+            if user and user["password"] == password:
+                return redirect("/dashboard")
+
+            return "Invalid username or password"
+
+        except Exception as e:
+            return f"Database Error: {e}"
+
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    return redirect("/login")
+@app.route("/dashboard")
+def dashboard():
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT COUNT(*) AS total FROM books")
+    total_books = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) AS total FROM books WHERE status='Available'")
+    available_books = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) AS total FROM books WHERE status='Issued'")
+    issued_books = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) AS total FROM students")
+    total_students = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT uid, roll_number, status, issue_date
+        FROM transactions
+        ORDER BY issue_date DESC
+        LIMIT 10
+    """)
+    recent_transactions = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "dashboard.html",
+        total_books=total_books,
+        available_books=available_books,
+        issued_books=issued_books,
+        total_students=total_students,
+        recent_transactions=recent_transactions
+    )
+@app.route("/export_transactions")
+def export_transactions():
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT *
+        FROM transactions
+        ORDER BY issue_date DESC
+    """)
+
+    data = cursor.fetchall()
+
+    df = pd.DataFrame(data)
+
+    file_name = "transactions.xlsx"
+
+    df.to_excel(file_name, index=False)
+
+    conn.close()
+
+    return send_file(
+        file_name,
+        as_attachment=True
+    )
+@app.route("/books")
+def books():
+
+    search = request.args.get("search", "")
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if search:
+
+        cursor.execute("""
+            SELECT *
+            FROM books
+            WHERE uid LIKE %s
+               OR book_number LIKE %s
+               OR book_name LIKE %s
+               OR author LIKE %s
+            ORDER BY book_name
+        """, (
+            "%" + search + "%",
+            "%" + search + "%",
+            "%" + search + "%",
+            "%" + search + "%"
+        ))
+
+    else:
+
+        cursor.execute("""
+            SELECT *
+            FROM books
+            ORDER BY book_name
+        """)
+
+    books = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "books.html",
+        books=books,
+        search=search
+    )
+@app.route("/edit_book/<uid>", methods=["GET", "POST"])
+def edit_book(uid):
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT * FROM books WHERE uid=%s",
+        (uid,)
+    )
+
+    book = cursor.fetchone()
+
+    if not book:
+        conn.close()
+        return "Book not found"
+
+    if book["status"] == "Issued":
+        conn.close()
+        return "Issued books cannot be edited"
+
+    if request.method == "POST":
+
+        book_number = request.form["book_number"]
+        book_name = request.form["book_name"]
+        author = request.form["author"]
+
+        try:
+            cursor.execute("""
+                UPDATE books
+                SET book_number=%s,
+                    book_name=%s,
+                    author=%s
+                WHERE uid=%s
+            """, (
+                book_number,
+                book_name,
+                author,
+                uid
+            ))
+
+            conn.commit()
+
+        except Exception as e:
+
+            conn.rollback()
+            return f"Error Updating Book: {e}"
+
+        finally:
+
+            conn.close()
+
+        return redirect("/books")
+
+    conn.close()
+
+    return render_template(
+        "edit_book.html",
+        book=book
+    )
+@app.route("/replace_uid/<old_uid>", methods=["GET", "POST"])
+def replace_uid(old_uid):
+
+    if request.method == "POST":
+
+        new_uid = request.form["new_uid"]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "UPDATE books SET uid=%s WHERE uid=%s",
+            (new_uid, old_uid)
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("books"))
+    return render_template(
+        "replace_uid.html",
+        old_uid=old_uid
+    )
+@app.route("/deactivate_book/<uid>")
+def deactivate_book(uid):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT status FROM books WHERE uid=%s",
+        (uid,)
+    )
+
+    book = cursor.fetchone()
+
+    if book and book[0] == "Issued":
+        conn.close()
+        return "Issued books cannot be deactivated"
+
+    cursor.execute(
+        "UPDATE books SET status='Inactive' WHERE uid=%s",
+        (uid,)
+    )
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for("books"))
+@app.route("/edit_student/<roll_number>", methods=["GET", "POST"])
+def edit_student(roll_number):
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM students WHERE roll_number=%s", (roll_number,))
+    student = cursor.fetchone()
+
+    if not student:
+        conn.close()
+        return "Student not found"
+
+    if request.method == "POST":
+
+        student_name = request.form["student_name"]
+        department = request.form["department"]
+        year = request.form["year"]
+
+        try:
+            cursor.execute("""
+                UPDATE students
+                SET student_name=%s,
+                    department=%s,
+                    year=%s
+                WHERE roll_number=%s
+            """, (student_name, department, year, roll_number))
+
+            conn.commit()
+
+            return "Student updated successfully"
+
+        except Exception as e:
+            conn.rollback()
+            return f"Error: {str(e)}"
+
+        finally:
+            conn.close()
+
+    conn.close()
+    return render_template("edit_student.html", student=student)
+@app.route("/add_book", methods=["GET", "POST"])
+def add_book():
+
+    if request.method == "POST":
+
+        uid = request.form["uid"]
+        book_number = request.form["book_number"]
+        book_name = request.form["book_name"]
+        author = request.form["author"]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # CHECK DUPLICATE
+            cursor.execute("SELECT * FROM books WHERE uid=%s", (uid,))
+            existing = cursor.fetchone()
+
+            if existing:
+                conn.close()
+                return "❌ Book already exists with this UID"
+
+            # INSERT BOOK
+            cursor.execute("""
+                INSERT INTO books
+                (uid, book_number, book_name, author, status)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                uid,
+                book_number,
+                book_name,
+                author,
+                "Available"
+            ))
+
+            conn.commit()
+            conn.close()
+
+            return render_template("add_book.html", success=True)
+
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return f"Error Adding Book: {e}"
+
+    return render_template("add_book.html")
+@app.route("/add_student", methods=["GET", "POST"])
+def add_student():
+
+    if request.method == "POST":
+
+        roll_number = request.form["roll_number"]
+        student_name = request.form["student_name"]
+        department = request.form["department"]
+        year = request.form["year"]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                INSERT INTO students
+                (roll_number, student_name, department, year)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                roll_number,
+                student_name,
+                department,
+                year
+            ))
+
+            conn.commit()
+            conn.close()
+
+            return render_template("add_student.html", success=True)
+
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return f"Error Adding Student: {e}"
+
+    return render_template("add_student.html")
+@app.route("/students")
+def students():
+
+    search = request.args.get("search", "")
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+    SELECT *
+    FROM students
+    WHERE status='Active'
+    AND (
+        roll_number LIKE %s
+        OR student_name LIKE %s
+    )
+""", (
+    "%" + search + "%",
+    "%" + search + "%"
+))
+
+    students = cursor.fetchall()
+    conn.close()
+
+    return render_template("students.html", students=students, search=search)
+@app.route("/issue_book", methods=["GET", "POST"])
+def issue_book():
+
+    if request.method == "POST":
+
+        uid = request.form.get("uid")
+        roll_number = request.form.get("roll_number")
+
+        if not uid:
+            return "UID Required"
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                INSERT INTO transactions
+                (uid, roll_number, issue_date, due_date, status)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                uid,
+                roll_number,
+                datetime.now(),
+                datetime.now() + timedelta(days=15),
+                "Issued"
+            ))
+
+            cursor.execute("""
+                UPDATE books
+                SET status='Issued'
+                WHERE uid=%s
+            """, (uid,))
+
+            conn.commit()
+            conn.close()
+
+            return render_template(
+                "issue_book.html",
+                message="Book issued successfully",
+                redirect="/dashboard"
+            )
+
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return f"Error Issuing Book: {e}"
+
+    return render_template("issue_book.html")
+@app.route("/return_book", methods=["GET", "POST"])
+def return_book():
+
+    if request.method == "POST":
+
+        uid = request.form["uid"]
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        try:
+            cursor.execute("""
+                SELECT *
+                FROM transactions
+                WHERE uid=%s AND status='Issued'
+            """, (uid,))
+
+            transaction = cursor.fetchone()
+
+            if not transaction:
+                conn.close()
+                return render_template(
+                    "return_book.html",
+                    message="Book not found or already returned",
+                    redirect="/return_book"
+                )
+
+            due_date = transaction["due_date"]
+            today = datetime.now().date()
+
+            fine = 0
+            if today > due_date:
+                fine = (today - due_date).days * 2
+
+            cursor.execute("""
+                UPDATE transactions
+                SET status='Returned',
+                    return_date=%s,
+                    fine=%s
+                WHERE id=%s
+            """, (
+                datetime.now(),
+                fine,
+                transaction["id"]
+            ))
+
+            cursor.execute("""
+                UPDATE books
+                SET status='Available'
+                WHERE uid=%s
+            """, (uid,))
+
+            conn.commit()
+            conn.close()
+
+            return render_template(
+                "return_book.html",
+                message=f"Book Returned Successfully. Fine = ₹{fine}",
+                redirect="/dashboard"
+            )
+
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            return f"Error Returning Book: {e}"
+
+    return render_template("return_book.html")
+@app.route("/check_book/<uid>")
+def check_book(uid):
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT status FROM books WHERE uid=%s", (uid,))
+    book = cursor.fetchone()
+
+    conn.close()
+
+    if not book:
+        return {"status": "NOT_FOUND"}
+
+    return {"status": book["status"]}
+
+@app.route("/get_book/<uid>")
+def get_book(uid):
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT * FROM books WHERE uid=%s",
+        (uid,)
+    )
+
+    book = cursor.fetchone()
+
+    conn.close()
+
+    return jsonify(book)
+@app.route("/transactions")
+def transactions():
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT *
+        FROM transactions
+        ORDER BY issue_date DESC
+    """)
+
+    transactions = cursor.fetchall()
+
+    today = datetime.now().date()
+
+    # add overdue flag
+    for t in transactions:
+        t["is_overdue"] = False
+
+        if t["status"] == "Issued" and t["due_date"] is not None:
+            if today > t["due_date"]:
+                t["is_overdue"] = True
+
+    conn.close()
+
+    return render_template("transactions.html", transactions=transactions)
+# -----------------------------
+# BULK STUDENT MANAGEMENT PAGE
+# -----------------------------
+@app.route("/bulk_student_management")
+def bulk_student_management():
+    return render_template("bulk_student_management.html")
+
+
+# -----------------------------
+# BULK IMPORT STUDENTS
+# -----------------------------
+@app.route("/bulk_import_students", methods=["POST"])
+def bulk_import_students():
+
+    if "excel_file" not in request.files:
+        return "No file uploaded"
+
+    file = request.files["excel_file"]
+
+    if file.filename == "":
+        return "Please select a file"
+
+    df = pd.read_excel(file)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        for _, row in df.iterrows():
+
+            cursor.execute("""
+                INSERT INTO students
+                (roll_number, student_name, department, year, status)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                str(row["roll_number"]).strip(),
+                str(row["student_name"]).strip(),
+                str(row["department"]).strip(),
+                int(row["year"]),
+                "Active"
+            ))
+
+        conn.commit()
+
+        return f"Students Imported Successfully. Updated Rows = {updated_count}"
+        return redirect("/student")
+
+    except Exception as e:
+
+        conn.rollback()
+        return f"Error Importing Students: {e}"
+
+    finally:
+
+        conn.close()
+
+# -----------------------------
+# BULK DEACTIVATE STUDENTS
+# -----------------------------
+@app.route("/bulk_deactivate_students", methods=["POST"])
+def bulk_deactivate_students():
+
+    if "excel_file" not in request.files:
+        return "No file uploaded"
+
+    file = request.files["excel_file"]
+
+    if file.filename == "":
+        return "Please select a file"
+
+    df = pd.read_excel(file)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    updated_count = 0
+
+    try:
+
+        for _, row in df.iterrows():
+
+            roll_number = str(row["roll_number"]).strip()
+
+            cursor.execute("""
+                UPDATE students
+                SET status='Inactive'
+                WHERE roll_number=%s
+            """, (roll_number,))
+
+            print("Roll Number:", roll_number)
+            print("Rows Updated:", cursor.rowcount)
+
+            updated_count += cursor.rowcount
+
+        conn.commit()
+        return f"Students Deactivated Successfully. Updated Rows = {updated_count}"
+
+    except Exception as e:
+
+        conn.rollback()
+        return f"Error Deactivating Students: {e}"
+
+    finally:
+
+        conn.close()
+@app.route("/inactive_students")
+def inactive_students():
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT *
+        FROM students
+        WHERE status='Inactive'
+    """)
+
+    students = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "inactive_students.html",
+        students=students
+    )
+@app.route("/overdue_report")
+def overdue_report():
+
+    department = request.args.get("department")
+    from_date = request.args.get("from_date")
+    to_date = request.args.get("to_date")
+    min_fine = request.args.get("min_fine")
+    max_fine = request.args.get("max_fine")
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT t.*, s.student_name, s.department
+        FROM transactions t
+        JOIN students s ON t.roll_number = s.roll_number
+        WHERE t.status='Issued'
+        AND t.due_date < CURDATE()
+    """
+
+    params = []
+
+    if department:
+        query += " AND s.department=%s"
+        params.append(department)
+
+    if from_date and to_date:
+        query += " AND t.due_date BETWEEN %s AND %s"
+        params.extend([from_date, to_date])
+
+    if min_fine and max_fine:
+        query += " AND t.fine BETWEEN %s AND %s"
+        params.extend([min_fine, max_fine])
+
+    cursor.execute(query, tuple(params))
+
+    books = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "overdue_report.html",
+        books=books
+    )
+@app.route("/export_overdue_report")
+def export_overdue_report():
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            t.uid,
+            t.roll_number,
+            s.student_name,
+            s.department,
+            t.issue_date,
+            t.due_date,
+            t.status
+        FROM transactions t
+        JOIN students s
+            ON t.roll_number = s.roll_number
+        WHERE t.status='Issued'
+        AND t.due_date < CURDATE()
+    """)
+
+    books = cursor.fetchall()
+
+    conn.close()
+
+    df = pd.DataFrame(books)
+
+    file_name = "overdue_books_report.xlsx"
+
+    df.to_excel(file_name, index=False)
+
+    return send_file(
+        file_name,
+        as_attachment=True
+    )
+@app.route("/reports")
+def reports():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM books")
+    total_books = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM books
+        WHERE status='Available'
+    """)
+    available_books = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM books
+        WHERE status='Issued'
+    """)
+    issued_books = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM students
+    """)
+    total_students = cursor.fetchone()[0]
+
+    cursor.execute("""
+       SELECT IFNULL(SUM(fine),0)
+       FROM transactions
+     """)
+    total_fine = cursor.fetchone()[0]
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM transactions
+        WHERE status='Issued'
+        AND due_date < CURDATE()
+    """)
+    overdue_books = cursor.fetchone()[0]
+    conn.close()
+    return render_template(
+    "reports.html",
+    total_books=total_books,
+    available_books=available_books,
+    issued_books=issued_books,
+    total_students=total_students,
+    overdue_books=overdue_books,
+    total_fine=total_fine
+)
+ 
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

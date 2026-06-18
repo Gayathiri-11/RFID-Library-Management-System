@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Student</title>
+
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f9;
+        }
+
+        .container{
+            width:400px;
+            margin:40px auto;
+            background:white;
+            padding:25px;
+            border-radius:10px;
+            box-shadow:0px 0px 10px lightgray;
+        }
+
+        label{
+            font-weight:bold;
+        }
+
+        input{
+            width:100%;
+            padding:10px;
+            margin:8px 0;
+            border:1px solid #ccc;
+            border-radius:5px;
+        }
+
+        button{
+            width:100%;
+            padding:10px;
+            background:#0066cc;
+            color:white;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+        }
+
+        button:hover{
+            background:#004d99;
+        }
+    </style>
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+<h2>Edit Student</h2>
+
+<form method="POST">
+
+<label>Roll Number</label>
+<input type="text" name="roll_number" value="{{ student.roll_number }}" readonly>
+
+<label>Student Name</label>
+<input type="text" name="student_name" value="{{ student.student_name }}" required>
+
+<label>Department</label>
+<input type="text" name="department" value="{{ student.department }}" required>
+
+<label>Year</label>
+<input type="number" name="year" value="{{ student.year }}" required>
+
+<button type="submit">Update Student</button>
+
+</form>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast">Student Updated Successfully</div>
+
+<style>
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #28a745;
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+#toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2s;
+}
+
+@keyframes fadein {
+    from { bottom: 0; opacity: 0; }
+    to { bottom: 30px; opacity: 1; }
+}
+
+@keyframes fadeout {
+    from { bottom: 30px; opacity: 1; }
+    to { bottom: 0; opacity: 0; }
+}
+</style>
+
+<script>
+function showToast() {
+    var toast = document.getElementById("toast");
+
+    toast.classList.add("show");
+
+    setTimeout(function() {
+        toast.classList.remove("show");
+        window.location.href = "/students";
+    }, 2000);
+}
+</script>
+
+{% if success %}
+<script>
+showToast();
+</script>
+{% endif %}
+</body>
+</html>

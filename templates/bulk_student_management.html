@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Student Management</title>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f9;
+            margin:0;
+            padding:0;
+        }
+
+        .container{
+            margin-left:240px;
+            padding:20px;
+       }    
+
+        h1{
+            text-align:center;
+            color:#003366;
+            margin-bottom:30px;
+        }
+
+        .card{
+            background:white;
+            padding:25px;
+            margin-bottom:20px;
+            border-radius:10px;
+            box-shadow:0px 0px 10px lightgray;
+        }
+
+        h2{
+            color:#003366;
+            margin-top:0;
+        }
+
+        p{
+            color:#555;
+        }
+
+        input[type="file"]{
+            margin-top:10px;
+            margin-bottom:15px;
+        }
+
+        button{
+            background:#003366;
+            color:white;
+            border:none;
+            padding:10px 20px;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:14px;
+        }
+
+        button:hover{
+            background:#0055aa;
+        }
+
+        .danger{
+            background:red;
+        }
+
+        .danger:hover{
+            background:darkred;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    {% include 'sidebar.html' %}
+
+    <div class="container">
+
+        <h1>Bulk Student Management</h1>
+
+        <!-- Bulk Import Students -->
+        <div class="card">
+
+            <h2>Bulk Import Students</h2>
+
+            <p>
+                Upload an Excel file containing:
+                Roll Number, Student Name, Department, and Year.
+            </p>
+
+            <form
+                action="/bulk_import_students"
+                method="POST"
+                enctype="multipart/form-data">
+
+                <input
+                    type="file"
+                    name="excel_file"
+                    accept=".xlsx,.xls"
+                    required>
+
+                <br>
+
+                <button type="submit">
+                    Import Students
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- Bulk Deactivate Students -->
+        <div class="card">
+
+            <h2>Bulk Deactivate Students</h2>
+
+            <p>
+                Upload an Excel file containing only the Roll Numbers
+                of students who have completed their studies.
+            </p>
+
+            <form
+                action="/bulk_deactivate_students"
+                method="POST"
+                enctype="multipart/form-data">
+
+                <input
+                    type="file"
+                    name="excel_file"
+                    accept=".xlsx,.xls"
+                    required>
+
+                <br>
+
+                <button
+                    type="submit"
+                    class="danger">
+                    Deactivate Students
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

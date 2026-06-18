@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Add Student</title>
+
+
+<style>
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f6f9;
+        margin:0;
+        padding:0;
+    }
+    .container{
+     width:450px;
+     background:white;
+     padding:30px;
+     border-radius:10px;
+     box-shadow:0px 0px 10px lightgray;
+
+     position:absolute;
+     top:50%;
+     left:calc(50% + 110px);
+     transform:translate(-50%, -50%);
+    }
+    h1{
+        text-align:center;
+        color:#003366;
+    }
+
+    label{
+        font-weight:bold;
+    }
+
+    input{
+        width:100%;
+        padding:10px;
+        margin-top:5px;
+        margin-bottom:15px;
+        border:1px solid #ccc;
+        border-radius:5px;
+        box-sizing:border-box;
+    }
+
+    button{
+        width:100%;
+        background:#0066cc;
+        color:white;
+        padding:12px;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+        font-size:16px;
+    }
+
+    button:hover{
+        background:#004d99;
+    }
+
+    #toast {
+        visibility: hidden;
+        min-width: 250px;
+        background-color: #28a745;
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        bottom: 30px;
+        transform: translateX(-50%);
+    }
+
+    #toast.show {
+        visibility: visible;
+        animation: fadein 0.5s, fadeout 0.5s 2s;
+    }
+
+    @keyframes fadein {
+        from {bottom: 0; opacity: 0;}
+        to {bottom: 30px; opacity: 1;}
+    }
+
+    @keyframes fadeout {
+        from {bottom: 30px; opacity: 1;}
+        to {bottom: 0; opacity: 0;}
+    }
+</style>
+
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+<h1>Add Student</h1>
+
+<form method="POST">
+
+    <label>Roll Number</label>
+    <input type="text" name="roll_number" required>
+
+    <label>Student Name</label>
+    <input type="text" name="student_name" required>
+
+    <label>Department</label>
+    <input type="text" name="department" required>
+
+    <label>Year</label>
+    <input type="number" name="year" min="1" max="4" required>
+
+    <button
+        type="submit"
+        onclick="return confirm('Are you sure you want to add this student?')">
+        Save Student
+    </button>
+
+</form>
+
+
+</div>
+
+<!-- Success Toast -->
+
+<div id="toast">Student Added Successfully</div>
+
+<script>
+function showToast() {
+    var toast = document.getElementById("toast");
+
+    toast.classList.add("show");
+
+    setTimeout(function() {
+        toast.classList.remove("show");
+        window.location.href = "/students";
+    }, 2000);
+}
+</script>
+
+{% if success %}
+
+<script>
+showToast();
+</script>
+
+{% endif %}
+
+</body>
+</html>

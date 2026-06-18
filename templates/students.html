@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Students</title>
+
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f9;
+            margin:0;
+            padding:0;
+        }
+
+        .container{
+          margin-left:240px;
+         padding:20px;
+        }
+        h1{
+            text-align:center;
+            color:#003366;
+        }
+
+        .search-box{
+            margin-bottom:20px;
+            text-align:center;
+        }
+
+        .search-box input{
+            padding:10px;
+            width:300px;
+        }
+
+        .search-box button{
+            padding:10px 15px;
+            background:#003366;
+            color:white;
+            border:none;
+            cursor:pointer;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+        }
+
+        th{
+            background:#003366;
+            color:white;
+            padding:12px;
+        }
+
+        td{
+            padding:10px;
+            border-bottom:1px solid #ddd;
+            text-align:center;
+        }
+
+        tr:hover{
+            background:#f2f2f2;
+        }
+
+        .no-data{
+            text-align:center;
+            padding:20px;
+            color:red;
+        }
+
+    </style>
+
+</head>
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+    <h1>Students</h1>
+
+    <div class="search-box">
+
+        <form method="GET" action="/students">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search by Roll Number or Name"
+                value="{{ search }}"
+            >
+
+            <button type="submit">
+                Search
+            </button>
+
+        </form>
+
+    </div>
+
+    <table>
+
+        <tr>
+            <th>Roll Number</th>
+            <th>Student Name</th>
+            <th>Department</th>
+            <th>Year</th>
+            <th>Email</th>
+        </tr>
+
+        {% for student in students %}
+
+<tr>
+    <td>{{ student.roll_number }}</td>
+    <td>{{ student.student_name }}</td>
+    <td>{{ student.department }}</td>
+    <td>{{ student.year }}</td>
+    <td>{{ student.email }}</td>
+
+    <td>
+        <a href="/edit_student/{{ student.roll_number }}">
+            Edit
+        </a>
+    </td>
+</tr>
+
+{% endfor %}
+    </table>
+
+    {% if students|length == 0 %}
+        <div class="no-data">
+            No Active Students Found
+        </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

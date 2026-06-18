@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Books Management</title>
+
+<style>
+
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f6f9;
+        margin:0;
+        padding:0;
+    }
+
+    .container{
+    margin-left:240px;
+    padding:20px;
+    }
+
+    h1{
+        text-align:center;
+        color:#003366;
+    }
+
+    .search-box{
+        margin-bottom:20px;
+        text-align:center;
+    }
+
+    .search-box input{
+        width:350px;
+        padding:10px;
+        border:1px solid #ccc;
+        border-radius:5px;
+    }
+
+    .search-box button{
+        padding:10px 15px;
+        background:#0066cc;
+        color:white;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        background:white;
+        box-shadow:0px 0px 10px lightgray;
+    }
+
+    th{
+        background:#003366;
+        color:white;
+        padding:12px;
+    }
+
+    td{
+        padding:10px;
+        text-align:center;
+        border:1px solid #ddd;
+    }
+
+    tr:nth-child(even){
+        background:#f2f2f2;
+    }
+
+    .available{
+        color:green;
+        font-weight:bold;
+    }
+
+    .issued{
+        color:red;
+        font-weight:bold;
+    }
+
+    .edit-btn{
+        background:#007bff;
+        color:white;
+        border:none;
+        padding:6px 12px;
+        border-radius:4px;
+        cursor:pointer;
+    }
+
+    .deactivate-btn{
+        background:#dc3545;
+        color:white;
+        border:none;
+        padding:6px 12px;
+        border-radius:4px;
+        cursor:pointer;
+    }
+
+</style>
+
+
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+
+<h1>Books Management</h1>
+
+<div class="search-box">
+
+    <form method="GET">
+
+        <input
+            type="text"
+            name="search"
+            placeholder="Search UID, Book Number, Book Name, Author"
+            value="{{ search }}"
+        >
+
+        <button type="submit">
+            Search
+        </button>
+
+    </form>
+
+</div>
+
+<table>
+
+    <tr>
+        <th>UID</th>
+        <th>Book Number</th>
+        <th>Book Name</th>
+        <th>Author</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for book in books %}
+
+    <tr>
+
+        <td>{{ book.uid }}</td>
+
+        <td>{{ book.book_number }}</td>
+
+        <td>{{ book.book_name }}</td>
+
+        <td>{{ book.author }}</td>
+
+        <td>
+
+            {% if book.status == 'Available' %}
+                <span class="available">Available</span>
+
+            {% elif book.status == 'Issued' %}
+                <span class="issued">Issued</span>
+
+            {% else %}
+                <span style="color:gray;font-weight:bold;">
+                    Inactive
+                </span>
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if book.status == 'Available' %}
+
+                <a href="/edit_book/{{ book.uid }}">
+                    <button type="button" class="edit-btn">
+                        Edit
+                    </button>
+                </a>
+
+                <a href="/deactivate_book/{{ book.uid }}">
+                    <button
+                        type="button"
+                        class="deactivate-btn"
+                        onclick="return confirm('Deactivate this book?')">
+                        Deactivate
+                    </button>
+                </a>
+<a href="/replace_uid/{{ book.uid }}">
+    <button type="button">
+        Replace RFID
+    </button>
+</a>
+
+            {% else %}
+
+                <span style="color:red;font-weight:bold;">
+                    Locked
+                </span>
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+
+</div>
+
+</body>
+</html>

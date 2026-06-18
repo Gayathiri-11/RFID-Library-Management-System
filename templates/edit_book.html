@@ -1,0 +1,82 @@
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Edit Book</title>
+
+
+<style>
+    body{
+        font-family: Arial;
+        background:#f4f6f9;
+    }
+
+    .container{
+        width:450px;
+        margin:40px auto;
+        background:white;
+        padding:30px;
+        border-radius:10px;
+        box-shadow:0 0 10px lightgray;
+    }
+
+    input{
+        width:100%;
+        padding:10px;
+        margin-bottom:15px;
+    }
+
+    button{
+        width:100%;
+        padding:10px;
+        background:#0066cc;
+        color:white;
+        border:none;
+    }
+</style>
+
+
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+
+<h2>Edit Book</h2>
+
+<form method="POST">
+     
+    <label>Book Number</label>
+    <input type="text"
+           name="book_number"
+           value="{{ book.book_number }}"
+           required>
+
+    <label>Book Name</label>
+    <input type="text"
+           name="book_name"
+           value="{{ book.book_name }}"
+           required>
+
+    <label>Author</label>
+    <input type="text"
+           name="author"
+           value="{{ book.author }}"
+           required>
+
+    <button type="submit">
+        Update Book
+    </button>
+
+</form>
+</div>
+
+</body>
+</html>
+
+
