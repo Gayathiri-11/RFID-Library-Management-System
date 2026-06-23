@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -39,35 +38,34 @@
             background:#b52a37;
         }
 
-        /* TOAST */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #28a745;
-            color: white;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1000;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
+        #toast{
+            visibility:hidden;
+            min-width:250px;
+            background-color:#28a745;
+            color:white;
+            text-align:center;
+            border-radius:8px;
+            padding:16px;
+            position:fixed;
+            z-index:1000;
+            left:50%;
+            bottom:30px;
+            transform:translateX(-50%);
         }
 
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2s;
+        #toast.show{
+            visibility:visible;
+            animation:fadein 0.5s, fadeout 0.5s 2s;
         }
 
-        @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
+        @keyframes fadein{
+            from {bottom:0; opacity:0;}
+            to {bottom:30px; opacity:1;}
         }
 
-        @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
+        @keyframes fadeout{
+            from {bottom:30px; opacity:1;}
+            to {bottom:0; opacity:0;}
         }
     </style>
 </head>
@@ -100,15 +98,6 @@
             Scan RFID
         </button>
 
-        <p><b>Student Roll Number</b></p>
-
-        <input
-            type="text"
-            name="roll_number"
-            placeholder="Enter Roll Number"
-            required
-        >
-
         <br><br>
 
         <button type="submit">
@@ -119,29 +108,62 @@
 
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-function showToast(message, redirectUrl=null) {
+function showToast(message, redirectUrl=null){
+
     var toast = document.getElementById("toast");
+
     toast.innerText = message;
     toast.classList.add("show");
 
     setTimeout(() => {
+
         toast.classList.remove("show");
 
-        if (redirectUrl) {
+        if(redirectUrl){
             window.location.href = redirectUrl;
         }
 
     }, 2000);
 }
+
+function scanRFID(){
+
+    fetch("/scan_uid")
+    .then(response => response.json())
+    .then(data => {
+
+        console.log("UID:", data.uid);
+
+        if(data.uid === "RFID_NOT_CONNECTED"){
+            showToast("RFID Reader Not Connected");
+            return;
+        }
+
+        if(data.uid){
+            document.getElementById("uid").value = data.uid;
+            showToast("RFID Scanned Successfully");
+        }
+
+    })
+    .catch(error => {
+        console.error(error);
+        showToast("RFID Scan Failed");
+    });
+}
+
+/* Auto Scan Every Second */
+setInterval(scanRFID, 1000);
 </script>
 
 {% if message %}
 <script>
-    showToast("{{ message }}", "{{ redirect }}");
+showToast(
+    "{{ message }}",
+    "{{ redirect }}"
+);
 </script>
 {% endif %}
 

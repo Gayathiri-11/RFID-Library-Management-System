@@ -488,13 +488,16 @@ def return_book():
         uid = request.form["uid"]
 
         conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary=True, buffered=True)
 
         try:
+            # Find latest issued transaction
             cursor.execute("""
                 SELECT *
                 FROM transactions
                 WHERE uid=%s AND status='Issued'
+                ORDER BY issue_date DESC
+                LIMIT 1
             """, (uid,))
 
             transaction = cursor.fetchone()
@@ -511,9 +514,11 @@ def return_book():
             today = datetime.now().date()
 
             fine = 0
-            if today > due_date:
+
+            if due_date and today > due_date:
                 fine = (today - due_date).days * 2
 
+            # Update transaction
             cursor.execute("""
                 UPDATE transactions
                 SET status='Returned',
@@ -526,6 +531,7 @@ def return_book():
                 transaction["id"]
             ))
 
+            # Update book status
             cursor.execute("""
                 UPDATE books
                 SET status='Available'
@@ -544,6 +550,10 @@ def return_book():
         except Exception as e:
             conn.rollback()
             conn.close()
+
+            import traceback
+            print(traceback.format_exc())
+
             return f"Error Returning Book: {e}"
 
     return render_template("return_book.html")
@@ -555,6 +565,7 @@ def check_book(uid):
 
     cursor.execute("SELECT status FROM books WHERE uid=%s", (uid,))
     book = cursor.fetchone()
+    cursor.fetchall()
 
     conn.close()
 
