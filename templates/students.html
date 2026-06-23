@@ -104,7 +104,6 @@
             <th>Student Name</th>
             <th>Department</th>
             <th>Year</th>
-            <th>Email</th>
         </tr>
 
         {% for student in students %}
@@ -114,7 +113,6 @@
     <td>{{ student.student_name }}</td>
     <td>{{ student.department }}</td>
     <td>{{ student.year }}</td>
-    <td>{{ student.email }}</td>
 
     <td>
         <a href="/edit_student/{{ student.roll_number }}">
