@@ -657,11 +657,11 @@ def bulk_import_students():
 
             cursor.execute("""
                 INSERT INTO students
-                (roll number, student name, department, year, status)
+                (roll_number, student_name, department, year, status)
                 VALUES (%s, %s, %s, %s, %s)
             """, (
-                str(row["Roll Number"]).strip(),
-                str(row["Student Name"]).strip(),
+                str(row["Roll_number"]).strip(),
+                str(row["Student_name"]).strip(),
                 str(row["Department"]).strip(),
                 int(row["Year"]),
                 "Active"
