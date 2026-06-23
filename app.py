@@ -641,8 +641,15 @@ def bulk_import_students():
 
     df = pd.read_excel(file)
 
+    # Convert column names to lowercase
+    df.columns = df.columns.str.strip().str.lower()
+
+    print("Columns:", df.columns.tolist())
+
     conn = get_connection()
     cursor = conn.cursor()
+
+    updated_count = 0
 
     try:
 
@@ -660,10 +667,11 @@ def bulk_import_students():
                 "Active"
             ))
 
+            updated_count += 1
+
         conn.commit()
 
-        return f"Students Imported Successfully. Updated Rows = {updated_count}"
-        return redirect("/student")
+        return f"Students Imported Successfully. Rows Imported = {updated_count}"
 
     except Exception as e:
 
@@ -673,7 +681,6 @@ def bulk_import_students():
     finally:
 
         conn.close()
-
 # -----------------------------
 # BULK DEACTIVATE STUDENTS
 # -----------------------------
