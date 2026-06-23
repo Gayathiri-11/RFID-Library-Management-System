@@ -660,10 +660,10 @@ def bulk_import_students():
                 (roll_number, student_name, department, year, status)
                 VALUES (%s, %s, %s, %s, %s)
             """, (
-                str(row["roll_number"]).strip(),
-                str(row["student_name"]).strip(),
-                str(row["department"]).strip(),
-                int(row["year"]),
+                str(row["Roll Number"]).strip(),
+                str(row["Student Name"]).strip(),
+                str(row["Department"]).strip(),
+                int(row["Year"]),
                 "Active"
             ))
 
