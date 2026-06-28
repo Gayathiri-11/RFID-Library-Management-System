@@ -1,104 +1,204 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Check Book Availability</title>
 
-    <style>
-        body{
-            font-family:Arial, sans-serif;
-            background:#f4f6f9;
-            margin:0;
-            padding:0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .container{
-            margin-left:240px;
-            padding:30px;
-        }
+<title>Check Book Availability</title>
 
-        h1{
-            text-align:center;
-            color:#003366;
-            margin-bottom:30px;
-        }
+<style>
 
-        .search-box{
-            background:white;
-            padding:25px;
-            border-radius:8px;
-            box-shadow:0 0 10px lightgray;
-            text-align:center;
-            margin-bottom:30px;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
 
-        .search-box input{
-            width:400px;
-            padding:12px;
-            border:1px solid #ccc;
-            border-radius:5px;
-            font-size:16px;
-        }
+body{
+    background:#f4f6f9;
+}
 
-        .search-box button{
-            padding:12px 20px;
-            background:#0066cc;
-            color:white;
-            border:none;
-            border-radius:5px;
-            cursor:pointer;
-            font-size:16px;
-        }
+.container{
+    margin-left:240px;
+    padding:25px;
+}
 
-        .search-box button:hover{
-            background:#004c99;
-        }
+.page-title{
+    text-align:center;
+    color:#003366;
+    margin-bottom:25px;
+}
 
-        .result-card{
-            background:white;
-            border-radius:8px;
-            box-shadow:0 0 10px lightgray;
-            padding:25px;
-            width:70%;
-            margin:auto;
-        }
+/* Search Card */
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-        }
+.search-card{
 
-        th{
-            width:35%;
-            text-align:left;
-            background:#003366;
-            color:white;
-            padding:12px;
-        }
+    background:#fff;
+    border-radius:10px;
+    padding:25px;
+    box-shadow:0 3px 10px rgba(0,0,0,.15);
+    margin-bottom:30px;
 
-        td{
-            padding:12px;
-            border:1px solid #ddd;
-        }
+}
 
-        .available{
-            color:green;
-            font-weight:bold;
-            font-size:18px;
-        }
+.search-card h2{
 
-        .issued{
-            color:red;
-            font-weight:bold;
-            font-size:18px;
-        }
+    color:#003366;
+    margin-bottom:20px;
 
-        .notfound{
-            text-align:center;
-            color:red;
-            font-size:20px;
-            font-weight:bold;
-        }
-    </style>
+}
+
+.search-box{
+
+    display:flex;
+    gap:10px;
+
+}
+
+.search-box input{
+
+    flex:1;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:5px;
+    font-size:16px;
+
+}
+
+.search-box button{
+
+    background:#0066cc;
+    color:white;
+    border:none;
+    padding:12px 25px;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:15px;
+
+}
+
+.search-box button:hover{
+
+    background:#004999;
+
+}
+
+/* Book Details */
+
+.details-card{
+
+    background:white;
+    border-radius:10px;
+    box-shadow:0 3px 10px rgba(0,0,0,.15);
+    padding:25px;
+    margin-bottom:30px;
+
+}
+
+.details-card h2{
+
+    color:#003366;
+    margin-bottom:20px;
+
+}
+
+table{
+
+    width:100%;
+    border-collapse:collapse;
+
+}
+
+th{
+
+    background:#003366;
+    color:white;
+    padding:12px;
+
+}
+
+td{
+
+    padding:12px;
+    border:1px solid #ddd;
+
+}
+
+tr:nth-child(even){
+
+    background:#f8f8f8;
+
+}
+
+.available{
+
+    color:green;
+    font-weight:bold;
+    font-size:18px;
+
+}
+
+.issued{
+
+    color:red;
+    font-weight:bold;
+    font-size:18px;
+
+}
+
+.inactive{
+
+    color:gray;
+    font-weight:bold;
+
+}
+
+/* Summary */
+
+.summary-card{
+
+    background:white;
+    border-radius:10px;
+    box-shadow:0 3px 10px rgba(0,0,0,.15);
+    padding:25px;
+
+}
+
+.summary-card h2{
+
+    color:#003366;
+    margin-bottom:20px;
+
+}
+
+.summary-table{
+
+    width:100%;
+
+}
+
+.summary-table th{
+
+    background:#0066cc;
+
+}
+
+.summary-table td{
+
+    text-align:center;
+
+}
+
+.green{
+
+    color:green;
+    font-weight:bold;
+
+}
+
+</style>
 
 </head>
 
@@ -108,11 +208,17 @@
 
 <div class="container">
 
-<h1>Check Book Availability</h1>
+<h1 class="page-title">
+Check Book Availability
+</h1>
 
-<div class="search-box">
+<div class="search-card">
+
+<h2>Search Book</h2>
 
 <form method="POST">
+
+<div class="search-box">
 
 <input
 type="text"
@@ -121,70 +227,87 @@ placeholder="Scan RFID / Enter Book Number / Book Name"
 required>
 
 <button type="submit">
-Check Availability
+
+Check
+
 </button>
+
+</div>
 
 </form>
 
 </div>
-
 {% if book %}
 
-<div class="result-card">
+<div class="details-card">
+
+<h2>Book Details</h2>
 
 <table>
 
 <tr>
-<th>RFID UID</th>
-<td>{{ book.uid }}</td>
+    <th style="width:30%;">RFID UID</th>
+    <td>{{ book.uid }}</td>
 </tr>
 
 <tr>
-<th>Book Number</th>
-<td>{{ book.book_number }}</td>
+    <th>Book Number</th>
+    <td>{{ book.book_number }}</td>
 </tr>
 
 <tr>
-<th>Category</th>
-<td>{{ book.category }}</td>
+    <th>Book Name</th>
+    <td>{{ book.book_name }}</td>
 </tr>
 
 <tr>
-<th>Book Name</th>
-<td>{{ book.book_name }}</td>
+    <th>Category</th>
+    <td>{{ book.category }}</td>
 </tr>
 
 <tr>
-<th>Author</th>
-<td>{{ book.author }}</td>
+    <th>Author</th>
+    <td>{{ book.author }}</td>
 </tr>
 
 <tr>
-<th>Rack Number</th>
-<td>{{ book.rack_number }}</td>
+    <th>Rack Number</th>
+    <td>{{ book.rack_number }}</td>
 </tr>
 
 <tr>
-<th>Status</th>
-<td>
-
-{% if book.status=="Available" %}
-<span class="available">✅ Available</span>
-
-{% elif book.status=="Issued" %}
-<span class="issued">❌ Issued</span>
-
-{% else %}
-<span style="color:gray;font-weight:bold;">Inactive</span>
-
-{% endif %}
-
-</td>
+    <th>Issue Count</th>
+    <td>{{ book.issue_count }}</td>
 </tr>
 
 <tr>
-<th>Issue Count</th>
-<td>{{ book.issue_count }}</td>
+
+    <th>Status</th>
+
+    <td>
+
+        {% if book.status=="Available" %}
+
+            <span class="available">
+                ✅ Available
+            </span>
+
+        {% elif book.status=="Issued" %}
+
+            <span class="issued">
+                ❌ Issued
+            </span>
+
+        {% else %}
+
+            <span class="inactive">
+                Inactive
+            </span>
+
+        {% endif %}
+
+    </td>
+
 </tr>
 
 </table>
@@ -193,17 +316,160 @@ Check Availability
 
 {% elif request.method=="POST" %}
 
-<div class="result-card">
+<div class="details-card">
 
-<p class="notfound">
+<h2 style="color:red;text-align:center;">
 Book Not Found
+</h2>
+
+<p style="text-align:center;font-size:18px;margin-top:15px;">
+No book matches the RFID, Book Number or Book Name you entered.
 </p>
 
 </div>
 
 {% endif %}
+<div class="summary-card">
+
+<h2>Category-wise Book Availability</h2>
+
+<table class="summary-table">
+
+    <tr>
+        <th>Category</th>
+        <th>Total Books</th>
+        <th>Available Books</th>
+    </tr>
+
+    {% for item in category_summary %}
+
+    <tr>
+
+        <td>
+            {{ item.category }}
+        </td>
+
+        <td>
+            {{ item.total_books }}
+        </td>
+
+        <td class="green">
+            {{ item.available_books }}
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
 
 </div>
 
+<br>
+
+<div class="summary-card">
+
+<h2>Library Statistics</h2>
+
+<table class="summary-table">
+
+<tr>
+    <th>Total Categories</th>
+    <th>Total Available Books</th>
+</tr>
+
+<tr>
+
+    <td>
+        {{ category_summary|length }}
+    </td>
+
+    <td class="green">
+
+        {% set total = namespace(value=0) %}
+
+        {% for item in category_summary %}
+            {% set total.value = total.value + item.available_books %}
+        {% endfor %}
+
+        {{ total.value }}
+
+    </td>
+
+</tr>
+
+</table>
+
+</div>
+<br>
+
+<div style="
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 3px 10px rgba(0,0,0,.15);
+text-align:center;
+margin-top:30px;
+">
+
+<h3 style="color:#003366;">
+📚 RFID Library Management System
+</h3>
+
+<p style="color:#666;font-size:15px;margin-top:10px;">
+Scan an RFID card or search using the Book Number or Book Name to instantly
+check the current availability of a book in the library.
+</p>
+
+</div>
+
+</div>
+
+<style>
+
+@media(max-width:900px){
+
+.container{
+
+margin-left:0;
+padding:15px;
+
+}
+
+.search-box{
+
+flex-direction:column;
+
+}
+
+.search-box input{
+
+width:100%;
+
+}
+
+.search-box button{
+
+width:100%;
+
+}
+
+table{
+
+font-size:14px;
+
+}
+
+th,td{
+
+padding:8px;
+
+}
+
+}
+
+</style>
+
 </body>
+
 </html>

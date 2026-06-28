@@ -572,30 +572,51 @@ def check_book_status(uid):
         return {"status": "NOT_FOUND"}
 
     return {"status": book["status"]}
-@app.route("/check_book", methods=["GET", "POST"])
+@app.route("/check_book", methods=["GET","POST"])
 def check_book():
 
-    book = None
+    conn=get_connection()
+    cursor=conn.cursor(dictionary=True)
 
-    if request.method == "POST":
-        keyword = request.form["keyword"]
+    book=None
 
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
+    if request.method=="POST":
+
+        keyword=request.form["keyword"]
 
         cursor.execute("""
-            SELECT *
-            FROM books
-            WHERE uid=%s
-               OR book_number=%s
-               OR book_name=%s
-        """, (keyword, keyword, keyword))
+        SELECT *
+        FROM books
+        WHERE uid=%s
+        OR book_number=%s
+        OR book_name=%s
+        """,(keyword,keyword,keyword))
 
-        book = cursor.fetchone()
+        book=cursor.fetchone()
 
-        conn.close()
+    cursor.execute("""
+    SELECT
+        category,
+        COUNT(*) AS total_books,
+        SUM(CASE
+            WHEN status='Available'
+            THEN 1
+            ELSE 0
+        END) AS available_books
+    FROM books
+    GROUP BY category
+    ORDER BY category
+    """)
 
-    return render_template("check_book.html", book=book)
+    category_summary=cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "check_book.html",
+        book=book,
+        category_summary=category_summary
+    )
 @app.route("/get_book/<uid>")
 def get_book(uid):
 
@@ -639,17 +660,11 @@ def transactions():
     conn.close()
 
     return render_template("transactions.html", transactions=transactions)
-# -----------------------------
-# BULK STUDENT MANAGEMENT PAGE
-# -----------------------------
+
 @app.route("/bulk_student_management")
 def bulk_student_management():
     return render_template("bulk_student_management.html")
 
-
-# -----------------------------
-# BULK IMPORT STUDENTS
-# -----------------------------
 @app.route("/bulk_import_students", methods=["POST"])
 def bulk_import_students():
 
