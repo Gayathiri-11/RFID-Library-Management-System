@@ -143,7 +143,6 @@ def books():
     cursor = conn.cursor(dictionary=True)
 
     if search:
-
         cursor.execute("""
             SELECT *
             FROM books
@@ -158,9 +157,7 @@ def books():
             "%" + search + "%",
             "%" + search + "%"
         ))
-
     else:
-
         cursor.execute("""
             SELECT *
             FROM books
@@ -169,12 +166,26 @@ def books():
 
     books = cursor.fetchall()
 
+    # Subject-wise book count
+    cursor.execute("""
+        SELECT
+            subject,
+            COUNT(*) AS total,
+            SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available
+        FROM books
+        GROUP BY subject
+        ORDER BY subject
+    """)
+
+    subject_counts = cursor.fetchall()
+
     conn.close()
 
     return render_template(
         "books.html",
         books=books,
-        search=search
+        search=search,
+        subject_counts=subject_counts
     )
 @app.route("/edit_book/<uid>", methods=["GET", "POST"])
 def edit_book(uid):
