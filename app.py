@@ -593,29 +593,25 @@ def check_book():
         """,(keyword,keyword,keyword))
 
         book=cursor.fetchone()
-
     cursor.execute("""
-    SELECT
-        category,
+        SELECT
+        book_name,
+        author,
         COUNT(*) AS total_books,
-        SUM(CASE
-            WHEN status='Available'
-            THEN 1
-            ELSE 0
-        END) AS available_books
-    FROM books
-    GROUP BY category
-    ORDER BY category
-    """)
+        SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available_books
+        FROM books
+        GROUP BY book_name, author
+        ORDER BY book_name
+        """)
 
-    category_summary=cursor.fetchall()
+     book_summary = cursor.fetchall()
 
     conn.close()
 
     return render_template(
         "check_book.html",
         book=book,
-        category_summary=category_summary
+        book_summary=book_summary
     )
 @app.route("/get_book/<uid>")
 def get_book(uid):

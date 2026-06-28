@@ -329,7 +329,40 @@ No book matches the RFID, Book Number or Book Name you entered.
 </div>
 
 {% endif %}
+
 <div class="summary-card">
+
+<h2>Available Books by Title</h2>
+
+<table class="summary-table">
+
+<tr>
+    <th>Book Name</th>
+    <th>Author</th>
+    <th>Total Copies</th>
+    <th>Available Copies</th>
+</tr>
+
+{% for item in book_summary %}
+
+<tr>
+
+    <td>{{ item.book_name }}</td>
+
+    <td>{{ item.author }}</td>
+
+    <td>{{ item.total_books }}</td>
+
+    <td style="color:green;font-weight:bold;">
+        {{ item.available_books }}
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+</div>
 
 <h2>Category-wise Book Availability</h2>
 
@@ -363,42 +396,6 @@ No book matches the RFID, Book Number or Book Name you entered.
 
 </table>
 
-</div>
-
-<br>
-
-<div class="summary-card">
-
-<h2>Library Statistics</h2>
-
-<table class="summary-table">
-
-<tr>
-    <th>Total Categories</th>
-    <th>Total Available Books</th>
-</tr>
-
-<tr>
-
-    <td>
-        {{ category_summary|length }}
-    </td>
-
-    <td class="green">
-
-        {% set total = namespace(value=0) %}
-
-        {% for item in category_summary %}
-            {% set total.value = total.value + item.available_books %}
-        {% endfor %}
-
-        {{ total.value }}
-
-    </td>
-
-</tr>
-
-</table>
 
 </div>
 <br>
