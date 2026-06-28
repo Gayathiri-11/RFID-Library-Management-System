@@ -143,6 +143,7 @@ def books():
     cursor = conn.cursor(dictionary=True)
 
     if search:
+
         cursor.execute("""
             SELECT *
             FROM books
@@ -157,7 +158,9 @@ def books():
             "%" + search + "%",
             "%" + search + "%"
         ))
+
     else:
+
         cursor.execute("""
             SELECT *
             FROM books
@@ -166,24 +169,12 @@ def books():
 
     books = cursor.fetchall()
 
-    cursor.execute("""
-    SELECT
-        category,
-        COUNT(*) AS total,
-        SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available
-    FROM books
-    GROUP BY category
-    ORDER BY category
-""")
-    category_counts = cursor.fetchall()
-
     conn.close()
 
     return render_template(
         "books.html",
         books=books,
-        search=search,
-        category_counts=category_counts
+        search=search
     )
 @app.route("/edit_book/<uid>", methods=["GET", "POST"])
 def edit_book(uid):
@@ -582,6 +573,30 @@ def check_book(uid):
         return {"status": "NOT_FOUND"}
 
     return {"status": book["status"]}
+@app.route("/check_book", methods=["GET", "POST"])
+def check_book():
+
+    book = None
+
+    if request.method == "POST":
+        keyword = request.form["keyword"]
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT *
+            FROM books
+            WHERE uid=%s
+               OR book_number=%s
+               OR book_name=%s
+        """, (keyword, keyword, keyword))
+
+        book = cursor.fetchone()
+
+        conn.close()
+
+    return render_template("check_book.html", book=book)
 
 @app.route("/get_book/<uid>")
 def get_book(uid):

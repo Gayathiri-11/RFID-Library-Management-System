@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Book Availability</title>
+
+    <style>
+        body{
+            font-family:Arial, sans-serif;
+            background:#f4f6f9;
+            margin:0;
+            padding:0;
+        }
+
+        .container{
+            margin-left:240px;
+            padding:30px;
+        }
+
+        h1{
+            text-align:center;
+            color:#003366;
+            margin-bottom:30px;
+        }
+
+        .search-box{
+            background:white;
+            padding:25px;
+            border-radius:8px;
+            box-shadow:0 0 10px lightgray;
+            text-align:center;
+            margin-bottom:30px;
+        }
+
+        .search-box input{
+            width:400px;
+            padding:12px;
+            border:1px solid #ccc;
+            border-radius:5px;
+            font-size:16px;
+        }
+
+        .search-box button{
+            padding:12px 20px;
+            background:#0066cc;
+            color:white;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:16px;
+        }
+
+        .search-box button:hover{
+            background:#004c99;
+        }
+
+        .result-card{
+            background:white;
+            border-radius:8px;
+            box-shadow:0 0 10px lightgray;
+            padding:25px;
+            width:70%;
+            margin:auto;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        th{
+            width:35%;
+            text-align:left;
+            background:#003366;
+            color:white;
+            padding:12px;
+        }
+
+        td{
+            padding:12px;
+            border:1px solid #ddd;
+        }
+
+        .available{
+            color:green;
+            font-weight:bold;
+            font-size:18px;
+        }
+
+        .issued{
+            color:red;
+            font-weight:bold;
+            font-size:18px;
+        }
+
+        .notfound{
+            text-align:center;
+            color:red;
+            font-size:20px;
+            font-weight:bold;
+        }
+    </style>
+
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+<h1>Check Book Availability</h1>
+
+<div class="search-box">
+
+<form method="POST">
+
+<input
+type="text"
+name="keyword"
+placeholder="Scan RFID / Enter Book Number / Book Name"
+required>
+
+<button type="submit">
+Check Availability
+</button>
+
+</form>
+
+</div>
+
+{% if book %}
+
+<div class="result-card">
+
+<table>
+
+<tr>
+<th>RFID UID</th>
+<td>{{ book.uid }}</td>
+</tr>
+
+<tr>
+<th>Book Number</th>
+<td>{{ book.book_number }}</td>
+</tr>
+
+<tr>
+<th>Category</th>
+<td>{{ book.category }}</td>
+</tr>
+
+<tr>
+<th>Book Name</th>
+<td>{{ book.book_name }}</td>
+</tr>
+
+<tr>
+<th>Author</th>
+<td>{{ book.author }}</td>
+</tr>
+
+<tr>
+<th>Rack Number</th>
+<td>{{ book.rack_number }}</td>
+</tr>
+
+<tr>
+<th>Status</th>
+<td>
+
+{% if book.status=="Available" %}
+<span class="available">✅ Available</span>
+
+{% elif book.status=="Issued" %}
+<span class="issued">❌ Issued</span>
+
+{% else %}
+<span style="color:gray;font-weight:bold;">Inactive</span>
+
+{% endif %}
+
+</td>
+</tr>
+
+<tr>
+<th>Issue Count</th>
+<td>{{ book.issue_count }}</td>
+</tr>
+
+</table>
+
+</div>
+
+{% elif request.method=="POST" %}
+
+<div class="result-card">
+
+<p class="notfound">
+Book Not Found
+</p>
+
+</div>
+
+{% endif %}
+
+</div>
+
+</body>
+</html>

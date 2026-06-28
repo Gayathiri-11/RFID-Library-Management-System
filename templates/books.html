@@ -1,136 +1,102 @@
+ <!DOCTYPE html>
 
-<!DOCTYPE html>
 <html>
 <head>
     <title>Books Management</title>
 
-    <style>
-        body{
-            font-family: Arial, sans-serif;
-            background:#f4f6f9;
-            margin:0;
-            padding:0;
-        }
+<style>
 
-        .container{
-            margin-left:240px;
-            padding:20px;
-        }
+    body{
+        font-family: Arial, sans-serif;
+        background:#f4f6f9;
+        margin:0;
+        padding:0;
+    }
 
-        h1{
-            text-align:center;
-            color:#003366;
-            margin-bottom:20px;
-        }
+    .container{
+    margin-left:240px;
+    padding:20px;
+    }
 
-        h2{
-            color:#003366;
-            margin-top:30px;
-            margin-bottom:15px;
-        }
+    h1{
+        text-align:center;
+        color:#003366;
+    }
 
-        .search-box{
-            margin-bottom:20px;
-            text-align:center;
-        }
+    .search-box{
+        margin-bottom:20px;
+        text-align:center;
+    }
 
-        .search-box input{
-            width:350px;
-            padding:10px;
-            border:1px solid #ccc;
-            border-radius:5px;
-            font-size:15px;
-        }
+    .search-box input{
+        width:350px;
+        padding:10px;
+        border:1px solid #ccc;
+        border-radius:5px;
+    }
 
-        .search-box button{
-            padding:10px 18px;
-            background:#0066cc;
-            color:white;
-            border:none;
-            border-radius:5px;
-            cursor:pointer;
-            font-size:15px;
-        }
+    .search-box button{
+        padding:10px 15px;
+        background:#0066cc;
+        color:white;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+    }
 
-        .search-box button:hover{
-            background:#004d99;
-        }
+    table{
+        width:100%;
+        border-collapse:collapse;
+        background:white;
+        box-shadow:0px 0px 10px lightgray;
+    }
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-            background:white;
-            box-shadow:0px 0px 10px lightgray;
-            margin-bottom:30px;
-        }
+    th{
+        background:#003366;
+        color:white;
+        padding:12px;
+    }
 
-        th{
-            background:#003366;
-            color:white;
-            padding:12px;
-        }
+    td{
+        padding:10px;
+        text-align:center;
+        border:1px solid #ddd;
+    }
 
-        td{
-            padding:10px;
-            text-align:center;
-            border:1px solid #ddd;
-        }
+    tr:nth-child(even){
+        background:#f2f2f2;
+    }
 
-        tr:nth-child(even){
-            background:#f2f2f2;
-        }
+    .available{
+        color:green;
+        font-weight:bold;
+    }
 
-        .available{
-            color:green;
-            font-weight:bold;
-        }
+    .issued{
+        color:red;
+        font-weight:bold;
+    }
 
-        .issued{
-            color:red;
-            font-weight:bold;
-        }
+    .edit-btn{
+        background:#007bff;
+        color:white;
+        border:none;
+        padding:6px 12px;
+        border-radius:4px;
+        cursor:pointer;
+    }
 
-        .inactive{
-            color:gray;
-            font-weight:bold;
-        }
+    .deactivate-btn{
+        background:#dc3545;
+        color:white;
+        border:none;
+        padding:6px 12px;
+        border-radius:4px;
+        cursor:pointer;
+    }
 
-        .edit-btn{
-            background:#007bff;
-            color:white;
-            border:none;
-            padding:6px 12px;
-            border-radius:4px;
-            cursor:pointer;
-        }
+</style>
 
-        .deactivate-btn{
-            background:#dc3545;
-            color:white;
-            border:none;
-            padding:6px 12px;
-            border-radius:4px;
-            cursor:pointer;
-        }
-
-        .replace-btn{
-            background:#28a745;
-            color:white;
-            border:none;
-            padding:6px 12px;
-            border-radius:4px;
-            cursor:pointer;
-        }
-
-        button:hover{
-            opacity:0.9;
-        }
-
-        .locked{
-            color:red;
-            font-weight:bold;
-        }
-    </style>
 
 </head>
 
@@ -140,10 +106,13 @@
 
 <div class="container">
 
+
 <h1>Books Management</h1>
 
 <div class="search-box">
+
     <form method="GET">
+
         <input
             type="text"
             name="search"
@@ -151,42 +120,19 @@
             value="{{ search }}"
         >
 
-        <button type="submit">Search</button>
+        <button type="submit">
+            Search
+        </button>
+
     </form>
+
 </div>
 
-<!-- SUBJECT SUMMARY -->
-
-<h2>Books Summary by Subject</h2>
-
 <table>
-    <tr>
-        <th>Subject</th>
-        <th>Total Books</th>
-        <th>Available Books</th>
-    </tr>
-
-    {% for item in subject_counts %}
-    <tr>
-        <td>{{ item.subject }}</td>
-        <td>{{ item.total }}</td>
-        <td style="color:green;font-weight:bold;">
-            {{ item.available }}
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-
-<!-- BOOKS LIST -->
-
-<h2>Books List</h2>
-
-<table>
-
+  
     <tr>
         <th>UID</th>
         <th>Book Number</th>
-        <th>Subject</th>
         <th>Book Name</th>
         <th>Author</th>
         <th>Status</th>
@@ -201,8 +147,6 @@
 
         <td>{{ book.book_number }}</td>
 
-        <td>{{ book.subject }}</td>
-
         <td>{{ book.book_name }}</td>
 
         <td>{{ book.author }}</td>
@@ -210,20 +154,13 @@
         <td>
 
             {% if book.status == 'Available' %}
-
-                <span class="available">
-                    Available
-                </span>
+                <span class="available">Available</span>
 
             {% elif book.status == 'Issued' %}
-
-                <span class="issued">
-                    Issued
-                </span>
+                <span class="issued">Issued</span>
 
             {% else %}
-
-                <span class="inactive">
+                <span style="color:gray;font-weight:bold;">
                     Inactive
                 </span>
 
@@ -249,16 +186,15 @@
                         Deactivate
                     </button>
                 </a>
-
-                <a href="/replace_uid/{{ book.uid }}">
-                    <button type="button" class="replace-btn">
-                        Replace RFID
-                    </button>
-                </a>
+<a href="/replace_uid/{{ book.uid }}">
+    <button type="button">
+        Replace RFID
+    </button>
+</a>
 
             {% else %}
 
-                <span class="locked">
+                <span style="color:red;font-weight:bold;">
                     Locked
                 </span>
 
@@ -272,8 +208,8 @@
 
 </table>
 
+
 </div>
 
 </body>
 </html>
-```
