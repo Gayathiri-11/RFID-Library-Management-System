@@ -558,14 +558,13 @@ def return_book():
 
     return render_template("return_book.html")
 @app.route("/check_book/<uid>")
-def check_book(uid):
+def check_book_status(uid):
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("SELECT status FROM books WHERE uid=%s", (uid,))
     book = cursor.fetchone()
-    cursor.fetchall()
 
     conn.close()
 
@@ -597,7 +596,6 @@ def check_book():
         conn.close()
 
     return render_template("check_book.html", book=book)
-
 @app.route("/get_book/<uid>")
 def get_book(uid):
 
