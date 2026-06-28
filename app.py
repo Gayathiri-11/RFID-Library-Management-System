@@ -604,7 +604,7 @@ def check_book():
         ORDER BY book_name
         """)
 
-     book_summary = cursor.fetchall()
+    book_summary = cursor.fetchall()
 
     conn.close()
 
