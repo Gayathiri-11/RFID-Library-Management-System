@@ -166,18 +166,16 @@ def books():
 
     books = cursor.fetchall()
 
-    # Subject-wise book count
     cursor.execute("""
-        SELECT
-            subject,
-            COUNT(*) AS total,
-            SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available
-        FROM books
-        GROUP BY subject
-        ORDER BY subject
-    """)
-
-    subject_counts = cursor.fetchall()
+    SELECT
+        category,
+        COUNT(*) AS total,
+        SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available
+    FROM books
+    GROUP BY category
+    ORDER BY category
+""")
+    category_counts = cursor.fetchall()
 
     conn.close()
 
@@ -185,7 +183,7 @@ def books():
         "books.html",
         books=books,
         search=search,
-        subject_counts=subject_counts
+        category_counts=category_counts
     )
 @app.route("/edit_book/<uid>", methods=["GET", "POST"])
 def edit_book(uid):
