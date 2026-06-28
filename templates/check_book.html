@@ -289,13 +289,13 @@ Check
         {% if book.status=="Available" %}
 
             <span class="available">
-                ✅ Available
+                Available
             </span>
 
         {% elif book.status=="Issued" %}
 
             <span class="issued">
-                ❌ Issued
+                Issued
             </span>
 
         {% else %}
@@ -364,61 +364,7 @@ No book matches the RFID, Book Number or Book Name you entered.
 </table>
 </div>
 
-<h2>Category-wise Book Availability</h2>
-
-<table class="summary-table">
-
-    <tr>
-        <th>Category</th>
-        <th>Total Books</th>
-        <th>Available Books</th>
-    </tr>
-
-    {% for item in category_summary %}
-
-    <tr>
-
-        <td>
-            {{ item.category }}
-        </td>
-
-        <td>
-            {{ item.total_books }}
-        </td>
-
-        <td class="green">
-            {{ item.available_books }}
-        </td>
-
-    </tr>
-
-    {% endfor %}
-
-</table>
-
-
-</div>
 <br>
-
-<div style="
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 3px 10px rgba(0,0,0,.15);
-text-align:center;
-margin-top:30px;
-">
-
-<h3 style="color:#003366;">
-📚 RFID Library Management System
-</h3>
-
-<p style="color:#666;font-size:15px;margin-top:10px;">
-Scan an RFID card or search using the Book Number or Book Name to instantly
-check the current availability of a book in the library.
-</p>
-
-</div>
 
 </div>
 
