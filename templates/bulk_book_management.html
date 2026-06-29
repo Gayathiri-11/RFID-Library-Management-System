@@ -9,148 +9,86 @@
 
     <style>
 
-        *{
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f9;
             margin:0;
             padding:0;
-            box-sizing:border-box;
-            font-family:Arial, Helvetica, sans-serif;
-        }
-
-        body{
-            background:#f4f6f9;
         }
 
         .container{
-            width:90%;
-            max-width:1100px;
-            margin:40px auto;
+            margin-left:240px;
+            padding:20px;
         }
 
         h1{
             text-align:center;
+            color:#003366;
             margin-bottom:30px;
-            color:#2c3e50;
-        }
-
-        .cards{
-            display:flex;
-            gap:30px;
-            flex-wrap:wrap;
-            justify-content:center;
         }
 
         .card{
-
-            width:480px;
             background:white;
-            border-radius:12px;
             padding:25px;
-            box-shadow:0px 4px 12px rgba(0,0,0,0.15);
-
+            margin-bottom:20px;
+            border-radius:10px;
+            box-shadow:0px 0px 10px lightgray;
         }
 
         h2{
-            text-align:center;
-            color:#007bff;
-            margin-bottom:20px;
+            color:#003366;
+            margin-top:0;
         }
 
-        input[type=file]{
+        p{
+            color:#555;
+            line-height:1.6;
+        }
 
-            width:100%;
-            padding:10px;
-            border:1px solid #ccc;
-            border-radius:6px;
-            margin-bottom:20px;
-
+        input[type="file"]{
+            margin-top:10px;
+            margin-bottom:15px;
         }
 
         button{
-
-            width:100%;
-            padding:12px;
-            border:none;
+            background:#003366;
             color:white;
-            font-size:16px;
+            border:none;
+            padding:10px 20px;
+            border-radius:5px;
             cursor:pointer;
-            border-radius:6px;
-
+            font-size:14px;
         }
 
-        .import{
-
-            background:#28a745;
-
+        button:hover{
+            background:#0055aa;
         }
 
-        .import:hover{
-
-            background:#218838;
-
+        .danger{
+            background:red;
         }
 
-        .delete{
-
-            background:#dc3545;
-
-        }
-
-        .delete:hover{
-
-            background:#c82333;
-
+        .danger:hover{
+            background:darkred;
         }
 
         table{
-
             width:100%;
             border-collapse:collapse;
-            margin-top:20px;
-
+            margin-top:15px;
         }
 
         table th{
-
-            background:#007bff;
+            background:#003366;
             color:white;
             padding:10px;
-
+            border:1px solid #ddd;
         }
 
         table td{
-
             border:1px solid #ddd;
             padding:8px;
             text-align:center;
-
-        }
-
-        .note{
-
-            margin-top:15px;
-            color:#555;
-            font-size:14px;
-
-        }
-
-        .back{
-
-            display:block;
-            width:220px;
-            margin:35px auto;
-            text-align:center;
-            text-decoration:none;
-            padding:12px;
-            background:#343a40;
-            color:white;
-            border-radius:6px;
-
-        }
-
-        .back:hover{
-
-            background:#23272b;
-
         }
 
     </style>
@@ -159,19 +97,27 @@
 
 <body>
 
+{% include 'sidebar.html' %}
+
 <div class="container">
 
-<h1>📚 Bulk Book Management</h1>
-
-<div class="cards">
+<h1>Bulk Book Management</h1>
 
 <!-- Import Books -->
 
 <div class="card">
 
-<h2>Bulk Import Books</h2>
+<h2>📚 Bulk Import Books</h2>
 
-<form action="/bulk_import_books" method="POST" enctype="multipart/form-data">
+<p>
+Upload an Excel file containing:
+<b>book_number, title, author, department</b>.
+</p>
+
+<form
+action="/bulk_import_books"
+method="POST"
+enctype="multipart/form-data">
 
 <input
 type="file"
@@ -179,7 +125,9 @@ name="excel_file"
 accept=".xlsx,.xls"
 required>
 
-<button class="import" type="submit">
+<br>
+
+<button type="submit">
 Import Books
 </button>
 
@@ -188,38 +136,27 @@ Import Books
 <table>
 
 <tr>
-
 <th>book_number</th>
 <th>title</th>
 <th>author</th>
 <th>department</th>
-
 </tr>
 
 <tr>
-
 <td>CSE001</td>
 <td>Python Programming</td>
 <td>John Smith</td>
 <td>CSE</td>
-
 </tr>
 
 <tr>
-
 <td>EEE001</td>
 <td>Electrical Machines</td>
-<td>P. S. Bimbhra</td>
+<td>P.S. Bimbhra</td>
 <td>EEE</td>
-
 </tr>
 
 </table>
-
-<p class="note">
-Upload an Excel file with the above column names.
-Duplicate book numbers will be skipped automatically.
-</p>
 
 </div>
 
@@ -227,9 +164,17 @@ Duplicate book numbers will be skipped automatically.
 
 <div class="card">
 
-<h2>Bulk Delete Books</h2>
+<h2>🗑 Bulk Delete Books</h2>
 
-<form action="/bulk_delete_books" method="POST" enctype="multipart/form-data">
+<p>
+Upload an Excel file containing only the
+<b>book_number</b> column.
+</p>
+
+<form
+action="/bulk_delete_books"
+method="POST"
+enctype="multipart/form-data">
 
 <input
 type="file"
@@ -237,7 +182,11 @@ name="excel_file"
 accept=".xlsx,.xls"
 required>
 
-<button class="delete" type="submit">
+<br>
+
+<button
+type="submit"
+class="danger">
 Delete Books
 </button>
 
@@ -246,65 +195,37 @@ Delete Books
 <table>
 
 <tr>
-
 <th>book_number</th>
-
 </tr>
 
 <tr>
-
 <td>CSE001</td>
-
 </tr>
 
 <tr>
-
 <td>EEE001</td>
-
 </tr>
 
 </table>
 
-<p class="note">
-Upload an Excel file containing only the
-<b>book_number</b> column.
-Matching books will be deleted.
-</p>
-
 </div>
 
 </div>
-
-<a href="/books" class="back">
-⬅ Back to Books
-</a>
-
-</div>
-
-<!-- SweetAlert Popup -->
 
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
-    {% for category, message in messages %}
+{% for category, message in messages %}
 
 <script>
-
 Swal.fire({
-
-icon: "{{ category }}",
-
-title:
-"{% if category=='success' %}Success{% else %}Error{% endif %}",
-
-text: "{{ message }}",
-
-confirmButtonColor:"#3085d6"
-
+    icon: "{{ 'success' if category=='success' else 'error' }}",
+    title: "{{ 'Success' if category=='success' else 'Error' }}",
+    text: "{{ message }}",
+    confirmButtonColor:"#003366"
 });
-
 </script>
 
-    {% endfor %}
+{% endfor %}
 {% endif %}
 {% endwith %}
 
