@@ -783,6 +783,89 @@ def inactive_students():
         "inactive_students.html",
         students=students
     )
+@app.route("/bulk_import_books", methods=["POST"])
+def bulk_import_books():
+
+    if "excel_file" not in request.files:
+        flash("No file uploaded", "danger")
+        return redirect("/books")
+
+    file = request.files["excel_file"]
+
+    if file.filename == "":
+        flash("Please select an Excel file", "danger")
+        return redirect("/books")
+
+    conn = None
+    cursor = None
+
+    try:
+        df = pd.read_excel(file)
+
+        # Check required columns
+        required_columns = ["book_number", "title", "author", "department"]
+
+        for column in required_columns:
+            if column not in df.columns:
+                flash(f"Missing column: {column}", "danger")
+                return redirect("/books")
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        inserted = 0
+        skipped = 0
+
+        for _, row in df.iterrows():
+
+            book_number = str(row["book_number"]).strip()
+            title = str(row["title"]).strip()
+            author = str(row["author"]).strip()
+            department = str(row["department"]).strip()
+
+            # Skip empty rows
+            if not book_number or book_number.lower() == "nan":
+                continue
+
+            cursor.execute(
+                "SELECT 1 FROM books WHERE book_number=%s",
+                (book_number,)
+            )
+
+            if cursor.fetchone():
+                skipped += 1
+                continue
+
+            cursor.execute("""
+                INSERT INTO books
+                (book_number, title, author, department)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                book_number,
+                title,
+                author,
+                department
+            ))
+
+            inserted += 1
+
+        conn.commit()
+
+        flash(f"{inserted} books imported successfully.", "success")
+
+        if skipped:
+            flash(f"{skipped} duplicate books skipped.", "warning")
+
+    except Exception as e:
+        flash(f"Error importing books: {e}", "danger")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+    return redirect("/books")
 @app.route("/overdue_report")
 def overdue_report():
 

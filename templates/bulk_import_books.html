@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulk Import Books</title>
+
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background:#f4f6f9;
+            margin:0;
+            padding:0;
+        }
+
+        .container{
+            width:500px;
+            margin:60px auto;
+            background:#fff;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.2);
+        }
+
+        h2{
+            text-align:center;
+            color:#333;
+            margin-bottom:20px;
+        }
+
+        label{
+            font-weight:bold;
+        }
+
+        input[type=file]{
+            width:100%;
+            margin-top:10px;
+            margin-bottom:20px;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            background:#007bff;
+            color:white;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:16px;
+        }
+
+        button:hover{
+            background:#0056b3;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:25px;
+        }
+
+        table th,
+        table td{
+            border:1px solid #ddd;
+            padding:8px;
+            text-align:center;
+        }
+
+        table th{
+            background:#007bff;
+            color:white;
+        }
+
+        .note{
+            margin-top:20px;
+            background:#eef7ff;
+            padding:12px;
+            border-left:5px solid #007bff;
+            border-radius:5px;
+        }
+
+        .success{
+            color:green;
+            text-align:center;
+            margin-bottom:15px;
+        }
+
+        .error{
+            color:red;
+            text-align:center;
+            margin-bottom:15px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Bulk Import Books</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p class="success">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="/bulk_import_books" method="POST" enctype="multipart/form-data">
+
+        <label>Select Excel File (.xlsx)</label>
+
+        <input
+            type="file"
+            name="excel_file"
+            accept=".xlsx,.xls"
+            required>
+
+        <button type="submit">
+            Upload Books
+        </button>
+
+    </form>
+
+    <div class="note">
+        <strong>Excel Format:</strong>
+
+        <table>
+            <tr>
+                <th>book_number</th>
+                <th>title</th>
+                <th>author</th>
+                <th>department</th>
+            </tr>
+
+            <tr>
+                <td>CSE001</td>
+                <td>Python Programming</td>
+                <td>John Smith</td>
+                <td>CSE</td>
+            </tr>
+
+            <tr>
+                <td>EEE001</td>
+                <td>Electrical Machines</td>
+                <td>P. S. Bimbhra</td>
+                <td>EEE</td>
+            </tr>
+        </table>
+
+        <br>
+
+        <b>Note:</b>
+        <ul>
+            <li>Do not include a <b>uid</b> column.</li>
+            <li>RFID UID will be assigned later by scanning the RFID tag.</li>
+            <li>The first row of the Excel file must contain the column names exactly as shown above.</li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>
