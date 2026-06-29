@@ -988,6 +988,62 @@ def export_overdue_report():
         file_name,
         as_attachment=True
     )
+@app.route("/map_book")
+def map_book():
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT book_number,title
+        FROM books
+        WHERE uid IS NULL
+    """)
+
+    books = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("map_book_uid.html", books=books)
+@app.route("/get_uid")
+def get_uid():
+
+    if ser.in_waiting:
+
+        uid=ser.readline().decode().strip()
+
+        return uid
+
+    return ""
+@app.route("/save_book_uid",methods=["POST"])
+def save_book_uid():
+
+    uid=request.form["uid"]
+
+    book_number=request.form["book_number"]
+
+    conn=get_connection()
+
+    cursor=conn.cursor()
+
+    cursor.execute("""
+
+        UPDATE books
+        SET uid=%s
+        WHERE book_number=%s
+
+    """,(uid,book_number))
+
+    conn.commit()
+
+    cursor.close()
+
+    conn.close()
+
+    flash("RFID Tag Mapped Successfully!","success")
+
+    return redirect("/map_book")
 @app.route("/reports")
 def reports():
 
