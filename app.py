@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 import mysql.connector
 from datetime import datetime, timedelta
 import serial
@@ -9,6 +9,7 @@ from database.db import get_connection
 from flask import url_for
 
 app = Flask(__name__)
+app.secret_key = "library_rfid_secret_key"
 
 if os.environ.get("RENDER"):
     arduino = None
