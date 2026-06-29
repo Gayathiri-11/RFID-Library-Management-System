@@ -781,9 +781,108 @@ def inactive_students():
         "inactive_students.html",
         students=students
     )
+@app.route("/overdue_report")
+def overdue_report():
+
+    department = request.args.get("department")
+    from_date = request.args.get("from_date")
+    to_date = request.args.get("to_date")
+    min_fine = request.args.get("min_fine")
+    max_fine = request.args.get("max_fine")
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT t.*, s.student_name, s.department
+        FROM transactions t
+        JOIN students s ON t.roll_number = s.roll_number
+        WHERE t.status='Issued'
+        AND t.due_date < CURDATE()
+    """
+
+    params = []
+
+    if department:
+        query += " AND s.department=%s"
+        params.append(department)
+
+    if from_date and to_date:
+        query += " AND t.due_date BETWEEN %s AND %s"
+        params.extend([from_date, to_date])
+
+    if min_fine and max_fine:
+        query += " AND t.fine BETWEEN %s AND %s"
+        params.extend([min_fine, max_fine])
+
+    cursor.execute(query, tuple(params))
+
+    books = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "overdue_report.html",
+        books=books
+    )
+@app.route("/export_overdue_report")
+def export_overdue_report():
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            t.uid,
+            t.roll_number,
+            s.student_name,
+            s.department,
+            t.issue_date,
+            t.due_date,
+            t.status
+        FROM transactions t
+        JOIN students s
+            ON t.roll_number = s.roll_number
+        WHERE t.status='Issued'
+        AND t.due_date < CURDATE()
+    """)
+
+    books = cursor.fetchall()
+
+    conn.close()
+
+    df = pd.DataFrame(books)
+
+    file_name = "overdue_books_report.xlsx"
+
+    df.to_excel(file_name, index=False)
+
+    return send_file(
+        file_name,
+        as_attachment=True
+    )
 @app.route("/bulk_book_management")
 def bulk_book_management():
-    return render_template("bulk_book_management.html")
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT book_number, title
+        FROM books
+        WHERE uid IS NULL
+        ORDER BY book_number
+    """)
+
+    books = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "bulk_book_management.html",
+        books=books
+    )
 @app.route("/bulk_import_books", methods=["POST"])
 def bulk_import_books():
 
@@ -896,9 +995,6 @@ def bulk_delete_books():
 
         flash(f"{deleted_count} books deleted successfully!", "success")        
     except Exception as e:
-
-        conn.commit()
-
         conn.rollback()
         flash(f"Error deleting books: {e}", "error")
 
@@ -908,104 +1004,6 @@ def bulk_delete_books():
         conn.close()
 
     return redirect("/bulk_book_management")
-@app.route("/overdue_report")
-def overdue_report():
-
-    department = request.args.get("department")
-    from_date = request.args.get("from_date")
-    to_date = request.args.get("to_date")
-    min_fine = request.args.get("min_fine")
-    max_fine = request.args.get("max_fine")
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    query = """
-        SELECT t.*, s.student_name, s.department
-        FROM transactions t
-        JOIN students s ON t.roll_number = s.roll_number
-        WHERE t.status='Issued'
-        AND t.due_date < CURDATE()
-    """
-
-    params = []
-
-    if department:
-        query += " AND s.department=%s"
-        params.append(department)
-
-    if from_date and to_date:
-        query += " AND t.due_date BETWEEN %s AND %s"
-        params.extend([from_date, to_date])
-
-    if min_fine and max_fine:
-        query += " AND t.fine BETWEEN %s AND %s"
-        params.extend([min_fine, max_fine])
-
-    cursor.execute(query, tuple(params))
-
-    books = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "overdue_report.html",
-        books=books
-    )
-@app.route("/export_overdue_report")
-def export_overdue_report():
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT
-            t.uid,
-            t.roll_number,
-            s.student_name,
-            s.department,
-            t.issue_date,
-            t.due_date,
-            t.status
-        FROM transactions t
-        JOIN students s
-            ON t.roll_number = s.roll_number
-        WHERE t.status='Issued'
-        AND t.due_date < CURDATE()
-    """)
-
-    books = cursor.fetchall()
-
-    conn.close()
-
-    df = pd.DataFrame(books)
-
-    file_name = "overdue_books_report.xlsx"
-
-    df.to_excel(file_name, index=False)
-
-    return send_file(
-        file_name,
-        as_attachment=True
-    )
-@app.route("/map_book")
-def map_book():
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT book_number,title
-        FROM books
-        WHERE uid IS NULL
-    """)
-
-    books = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template("map_book_uid.html", books=books)
 @app.route("/get_uid")
 def get_uid():
 
@@ -1016,34 +1014,52 @@ def get_uid():
         return uid
 
     return ""
-@app.route("/save_book_uid",methods=["POST"])
+@app.route("/save_book_uid", methods=["POST"])
 def save_book_uid():
 
-    uid=request.form["uid"]
+    uid = request.form["uid"].strip()
+    book_number = request.form["book_number"].strip()
 
-    book_number=request.form["book_number"]
+    if uid == "":
+        flash("Please scan an RFID tag first.", "error")
+        return redirect("/bulk_book_management")
 
-    conn=get_connection()
+    conn = get_connection()
+    cursor = conn.cursor()
 
-    cursor=conn.cursor()
+    try:
 
-    cursor.execute("""
+        # Check whether this RFID tag is already assigned
+        cursor.execute(
+            "SELECT book_number FROM books WHERE uid=%s",
+            (uid,)
+        )
 
-        UPDATE books
-        SET uid=%s
-        WHERE book_number=%s
+        if cursor.fetchone():
+            flash("This RFID tag is already mapped.", "error")
+            return redirect("/bulk_book_management")
 
-    """,(uid,book_number))
+        cursor.execute("""
+            UPDATE books
+            SET uid=%s
+            WHERE book_number=%s
+        """, (uid, book_number))
 
-    conn.commit()
+        conn.commit()
 
-    cursor.close()
+        flash("RFID Tag Mapped Successfully!", "success")
 
-    conn.close()
+    except Exception as e:
 
-    flash("RFID Tag Mapped Successfully!","success")
+        conn.rollback()
+        flash(f"Error: {e}", "error")
 
-    return redirect("/map_book")
+    finally:
+
+        cursor.close()
+        conn.close()
+
+    return redirect("/bulk_book_management")
 @app.route("/reports")
 def reports():
 

@@ -1,97 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk Book Management</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<title>Bulk Book Management</title>
 
-    <style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        body{
-            font-family: Arial, sans-serif;
-            background:#f4f6f9;
-            margin:0;
-            padding:0;
-        }
+<style>
 
-        .container{
-            margin-left:240px;
-            padding:20px;
-        }
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:0;
+}
 
-        h1{
-            text-align:center;
-            color:#003366;
-            margin-bottom:30px;
-        }
+.container{
+    margin-left:240px;
+    padding:20px;
+}
 
-        .card{
-            background:white;
-            padding:25px;
-            margin-bottom:20px;
-            border-radius:10px;
-            box-shadow:0px 0px 10px lightgray;
-        }
+h1{
+    text-align:center;
+    color:#003366;
+    margin-bottom:30px;
+}
 
-        h2{
-            color:#003366;
-            margin-top:0;
-        }
+.card{
+    background:white;
+    padding:25px;
+    margin-bottom:25px;
+    border-radius:10px;
+    box-shadow:0 0 10px lightgray;
+}
 
-        p{
-            color:#555;
-            line-height:1.6;
-        }
+h2{
+    color:#003366;
+    margin-top:0;
+}
 
-        input[type="file"]{
-            margin-top:10px;
-            margin-bottom:15px;
-        }
+p{
+    color:#555;
+}
 
-        button{
-            background:#003366;
-            color:white;
-            border:none;
-            padding:10px 20px;
-            border-radius:5px;
-            cursor:pointer;
-            font-size:14px;
-        }
+label{
+    font-weight:bold;
+}
 
-        button:hover{
-            background:#0055aa;
-        }
+input[type=file],
+input[type=text],
+select{
 
-        .danger{
-            background:red;
-        }
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    margin-bottom:15px;
+    border:1px solid #ccc;
+    border-radius:5px;
 
-        .danger:hover{
-            background:darkred;
-        }
+}
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-            margin-top:15px;
-        }
+button{
 
-        table th{
-            background:#003366;
-            color:white;
-            padding:10px;
-            border:1px solid #ddd;
-        }
+    background:#003366;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:15px;
 
-        table td{
-            border:1px solid #ddd;
-            padding:8px;
-            text-align:center;
-        }
+}
 
-    </style>
+button:hover{
+
+    background:#0055aa;
+
+}
+
+.danger{
+
+    background:#d9534f;
+
+}
+
+.danger:hover{
+
+    background:#b52b27;
+
+}
+
+</style>
 
 </head>
 
@@ -102,87 +103,173 @@
 <div class="container">
 
 <h1>Bulk Book Management</h1>
-
-<!-- Import Books -->
-
-<div class="card">
-
-<h2>Bulk Import Books</h2>
-
-<p>
-Upload an Excel file containing:
-<b>book_number, title, author, department</b>.
-</p>
-
-<form
-action="/bulk_import_books"
-method="POST"
-enctype="multipart/form-data">
-
-<input
-type="file"
-name="excel_file"
-accept=".xlsx,.xls"
-required>
-
-<br>
-
-<button type="submit">
-Import Books
-</button>
-
-</form>
-
-</div>
-
-<!-- Delete Books -->
+<!-- ===================================== -->
+<!-- BULK IMPORT BOOKS -->
+<!-- ===================================== -->
 
 <div class="card">
 
-<h2>🗑 Bulk Delete Books</h2>
+    <h2>Bulk Import Books</h2>
 
-<p>
-Upload an Excel file containing only the
-<b>book_number</b> column.
-</p>
+    <p>
+        Upload an Excel file containing the following columns:
+        <br><br>
+        <b>book_number, title, author, department</b>
+    </p>
 
-<form
-action="/bulk_delete_books"
-method="POST"
-enctype="multipart/form-data">
+    <form
+        action="/bulk_import_books"
+        method="POST"
+        enctype="multipart/form-data">
 
-<input
-type="file"
-name="excel_file"
-accept=".xlsx,.xls"
-required>
+        <input
+            type="file"
+            name="excel_file"
+            accept=".xlsx,.xls"
+            required>
 
-<br>
+        <br>
 
-<button
-type="submit"
-class="danger">
-Delete Books
-</button>
+        <button type="submit">
+            Import Books
+        </button>
 
-</form>
-
-</div>
+    </form>
 
 </div>
+<div class="card">
 
+    <h2>Map RFID Tag to Book</h2>
+
+    <p>
+        Select a book, scan the RFID sticker using the RFID reader,
+        then click <b>Map RFID Tag</b>.
+    </p>
+
+    <form action="/save_book_uid" method="POST">
+
+        <label>Select Book</label>
+
+        <select
+            name="book_number"
+            required>
+
+            <option value="">-- Select Book --</option>
+
+            {% for book in books %}
+
+            <option value="{{ book.book_number }}">
+                {{ book.book_number }} - {{ book.title }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+        <label>RFID UID</label>
+
+        <input
+            type="text"
+            id="uid"
+            name="uid"
+            placeholder="Scan RFID Tag..."
+            readonly
+            required>
+
+        <button type="submit">
+            Map RFID Tag
+        </button>
+
+    </form>
+
+</div>
+<!-- ===================================== -->
+<!-- BULK DELETE BOOKS -->
+<!-- ===================================== -->
+
+<div class="card">
+
+    <h2>Bulk Delete Books</h2>
+
+    <p>
+        Upload an Excel file containing only the
+        <b>book_number</b> column.
+    </p>
+
+    <form
+        action="/bulk_delete_books"
+        method="POST"
+        enctype="multipart/form-data">
+
+        <input
+            type="file"
+            name="excel_file"
+            accept=".xlsx,.xls"
+            required>
+
+        <br>
+
+        <button
+            type="submit"
+            class="danger">
+            Delete Books
+        </button>
+
+    </form>
+
+</div>
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
 
 <script>
+
 Swal.fire({
-    icon: "{{ 'success' if category=='success' else 'error' }}",
+    icon: "{{ category }}",
     title: "{{ 'Success' if category=='success' else 'Error' }}",
     text: "{{ message }}",
     confirmButtonColor:"#003366"
 });
+
 </script>
+
+{% endfor %}
+{% endif %}
+{% endwith %}
+</div>
+
+<script>
+
+setInterval(function(){
+
+    fetch("/get_uid")
+    .then(response => response.text())
+    .then(uid => {
+
+        uid = uid.trim();
+
+        if(uid !== ""){
+            document.getElementById("uid").value = uid;
+        }
+
+    });
+
+},1000);
+
+</script>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  {% for category, message in messages %}
+
+    <script>
+    Swal.fire({
+     icon:"{{category}}",
+     title:"{{'Success' if category=='success' else 'Error'}}",
+     text:"{{message}}",
+     confirmButtonColor:"#003366"
+    });
+    </script>
 
 {% endfor %}
 {% endif %}
