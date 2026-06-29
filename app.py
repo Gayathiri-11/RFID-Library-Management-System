@@ -868,7 +868,7 @@ def bulk_book_management():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT book_number, title
+        SELECT book_number, book_name
         FROM books
         WHERE uid IS NULL
         ORDER BY book_number
@@ -907,7 +907,7 @@ def bulk_import_books():
         df = pd.read_excel(file)
         df.columns = df.columns.str.strip().str.lower()
 
-        required_columns = ["book_number", "title", "author", "department"]
+        required_columns = ["book_number", "book_name", "author", "department"]
 
         for column in required_columns:
             if column not in df.columns:
@@ -929,11 +929,11 @@ def bulk_import_books():
 
             cursor.execute("""
                 INSERT INTO books
-                (book_number, title, author, department)
+                (book_number, book_name, author, department)
                 VALUES (%s, %s, %s, %s)
             """, (
                 book_number,
-                str(row["title"]).strip(),
+                str(row["book_name"]).strip(),
                 str(row["author"]).strip(),
                 str(row["department"]).strip()
             ))
