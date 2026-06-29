@@ -600,10 +600,11 @@ def check_book():
         SELECT
         book_name,
         author,
+        category,
         COUNT(*) AS total_books,
         SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available_books
         FROM books
-        GROUP BY book_name, author
+        GROUP BY book_name, author, category
         ORDER BY book_name
         """)
 
@@ -693,12 +694,12 @@ def bulk_import_students():
 
             cursor.execute("""
                 INSERT INTO students
-                (roll_number, student_name, department, year, status)
+                (roll_number, student_name, category, year, status)
                 VALUES (%s, %s, %s, %s, %s)
             """, (
                 str(row["roll_number"]).strip(),
                 str(row["student_name"]).strip(),
-                str(row["department"]).strip(),
+                str(row["category"]).strip(),
                 int(row["year"]),
                 "Active"
             ))
@@ -909,7 +910,7 @@ def bulk_import_books():
         df = pd.read_excel(file)
         df.columns = df.columns.str.strip().str.lower()
 
-        required_columns = ["book_number", "book_name", "author", "department"]
+        required_columns = ["book_number", "book_name", "author", "category"]
 
         for column in required_columns:
             if column not in df.columns:
@@ -931,13 +932,13 @@ def bulk_import_books():
 
             cursor.execute("""
                 INSERT INTO books
-                (book_number, book_name, author, department)
+                (book_number, book_name, author, category)
                 VALUES (%s, %s, %s, %s)
             """, (
                 book_number,
                 str(row["book_name"]).strip(),
                 str(row["author"]).strip(),
-                str(row["department"]).strip()
+                str(row["category"]).strip()
             ))
 
             imported_count += 1
