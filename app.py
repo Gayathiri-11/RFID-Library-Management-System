@@ -714,9 +714,6 @@ def bulk_import_students():
     finally:
 
         conn.close()
-# -----------------------------
-# BULK DEACTIVATE STUDENTS
-# -----------------------------
 @app.route("/bulk_deactivate_students", methods=["POST"])
 def bulk_deactivate_students():
 
@@ -783,19 +780,9 @@ def inactive_students():
         "inactive_students.html",
         students=students
     )
-# -----------------------------
-# BULK BOOK MANAGEMENT PAG
-# -----------------------------
-# BULK BOOK MANAGEMENT PAGE
-# -----------------------------
 @app.route("/bulk_book_management")
 def bulk_book_management():
     return render_template("bulk_book_management.html")
-
-
-# -----------------------------
-# BULK IMPORT BOOKS
-# -----------------------------
 @app.route("/bulk_import_books", methods=["POST"])
 def bulk_import_books():
 
@@ -855,7 +842,6 @@ def bulk_import_books():
         conn.commit()
 
         flash(f"{imported_count} books imported successfully!", "success")
-    return redirect("/bulk_book_management")
     
     except Exception as e:
 
@@ -868,11 +854,6 @@ def bulk_import_books():
         conn.close()
 
     return redirect("/bulk_book_management")
-
-
-# -----------------------------
-# BULK DELETE BOOKS
-# -----------------------------
 @app.route("/bulk_delete_books", methods=["POST"])
 def bulk_delete_books():
 
@@ -912,9 +893,7 @@ def bulk_delete_books():
             deleted_count += cursor.rowcount
         conn.commit()
 
-        flash(f"{deleted_count} books deleted successfully!", "success")
-    return redirect("/bulk_book_management")
-        
+        flash(f"{deleted_count} books deleted successfully!", "success")        
     except Exception as e:
 
         conn.commit()
