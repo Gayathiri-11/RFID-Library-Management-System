@@ -783,57 +783,61 @@ def inactive_students():
         "inactive_students.html",
         students=students
     )
+# -----------------------------
+# BULK BOOK MANAGEMENT PAG
+# -----------------------------
+# BULK BOOK MANAGEMENT PAGE
+# -----------------------------
+@app.route("/bulk_book_management")
+def bulk_book_management():
+    return render_template("bulk_book_management.html")
+
+
+# -----------------------------
+# BULK IMPORT BOOKS
+# -----------------------------
 @app.route("/bulk_import_books", methods=["POST"])
 def bulk_import_books():
 
     if "excel_file" not in request.files:
-        flash("No file uploaded", "danger")
-        return redirect("/books")
+        flash("No file uploaded.", "error")
+        return redirect("/bulk_book_management")
 
     file = request.files["excel_file"]
 
     if file.filename == "":
-        flash("Please select an Excel file", "danger")
-        return redirect("/books")
+        flash("Please select an Excel file.", "error")
+        return redirect("/bulk_book_management")
 
-    conn = None
-    cursor = None
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    imported_count = 0
+    skipped_count = 0
 
     try:
-        df = pd.read_excel(file)
 
-        # Check required columns
+        df = pd.read_excel(file)
+        df.columns = df.columns.str.strip().str.lower()
+
         required_columns = ["book_number", "title", "author", "department"]
 
         for column in required_columns:
             if column not in df.columns:
-                flash(f"Missing column: {column}", "danger")
-                return redirect("/books")
-
-        conn = get_connection()
-        cursor = conn.cursor()
-
-        inserted = 0
-        skipped = 0
+                flash(f"Missing column: {column}", "error")
+                return redirect("/bulk_book_management")
 
         for _, row in df.iterrows():
 
             book_number = str(row["book_number"]).strip()
-            title = str(row["title"]).strip()
-            author = str(row["author"]).strip()
-            department = str(row["department"]).strip()
-
-            # Skip empty rows
-            if not book_number or book_number.lower() == "nan":
-                continue
 
             cursor.execute(
-                "SELECT 1 FROM books WHERE book_number=%s",
+                "SELECT * FROM books WHERE book_number=%s",
                 (book_number,)
             )
 
             if cursor.fetchone():
-                skipped += 1
+                skipped_count += 1
                 continue
 
             cursor.execute("""
@@ -842,30 +846,88 @@ def bulk_import_books():
                 VALUES (%s, %s, %s, %s)
             """, (
                 book_number,
-                title,
-                author,
-                department
+                str(row["title"]).strip(),
+                str(row["author"]).strip(),
+                str(row["department"]).strip()
             ))
 
-            inserted += 1
+            imported_count += 1
+        conn.commit()
+
+        flash(f"{imported_count} books imported successfully!", "success")
+    return redirect("/bulk_book_management")
+    
+    except Exception as e:
+
+        conn.rollback()
+        flash(f"Error importing books: {e}", "error")
+
+    finally:
+
+        cursor.close()
+        conn.close()
+
+    return redirect("/bulk_book_management")
+
+
+# -----------------------------
+# BULK DELETE BOOKS
+# -----------------------------
+@app.route("/bulk_delete_books", methods=["POST"])
+def bulk_delete_books():
+
+    if "excel_file" not in request.files:
+        flash("No file uploaded.", "error")
+        return redirect("/bulk_book_management")
+
+    file = request.files["excel_file"]
+
+    if file.filename == "":
+        flash("Please select an Excel file.", "error")
+        return redirect("/bulk_book_management")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    deleted_count = 0
+
+    try:
+
+        df = pd.read_excel(file)
+        df.columns = df.columns.str.strip().str.lower()
+
+        if "book_number" not in df.columns:
+            flash("Excel file must contain 'book_number' column.", "error")
+            return redirect("/bulk_book_management")
+
+        for _, row in df.iterrows():
+
+            book_number = str(row["book_number"]).strip()
+
+            cursor.execute(
+                "DELETE FROM books WHERE book_number=%s",
+                (book_number,)
+            )
+
+            deleted_count += cursor.rowcount
+        conn.commit()
+
+        flash(f"{deleted_count} books deleted successfully!", "success")
+    return redirect("/bulk_book_management")
+        
+    except Exception as e:
 
         conn.commit()
 
-        flash(f"{inserted} books imported successfully.", "success")
-
-        if skipped:
-            flash(f"{skipped} duplicate books skipped.", "warning")
-
-    except Exception as e:
-        flash(f"Error importing books: {e}", "danger")
+        conn.rollback()
+        flash(f"Error deleting books: {e}", "error")
 
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
-    return redirect("/books")
+        cursor.close()
+        conn.close()
+
+    return redirect("/bulk_book_management")
 @app.route("/overdue_report")
 def overdue_report():
 

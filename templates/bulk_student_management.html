@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bulk Student Management</title>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
 
         body{
@@ -17,7 +20,7 @@
         .container{
             margin-left:240px;
             padding:20px;
-       }    
+        }
 
         h1{
             text-align:center;
@@ -40,6 +43,7 @@
 
         p{
             color:#555;
+            line-height:1.6;
         }
 
         input[type="file"]{
@@ -62,11 +66,11 @@
         }
 
         .danger{
-            background:red;
+            background:#dc3545;
         }
 
         .danger:hover{
-            background:darkred;
+            background:#b02a37;
         }
 
     </style>
@@ -75,77 +79,101 @@
 
 <body>
 
-    {% include 'sidebar.html' %}
+{% include 'sidebar.html' %}
 
-    <div class="container">
+<div class="container">
 
-        <h1>Bulk Student Management</h1>
+    <h1>Bulk Student Management</h1>
 
-        <!-- Bulk Import Students -->
-        <div class="card">
+    <!-- Import Students -->
+    <div class="card">
 
-            <h2>Bulk Import Students</h2>
+        <h2>📥 Bulk Import Students</h2>
 
-            <p>
-                Upload an Excel file containing:
-                Roll Number, Student Name, Department, and Year.
-            </p>
+        <p>
+            Upload an Excel file containing the following columns:
+            <br><br>
+            <b>roll_number, student_name, department, year</b>
+        </p>
 
-            <form
-                action="/bulk_import_students"
-                method="POST"
-                enctype="multipart/form-data">
+        <form action="/bulk_import_students"
+              method="POST"
+              enctype="multipart/form-data">
 
-                <input
-                    type="file"
-                    name="excel_file"
-                    accept=".xlsx,.xls"
-                    required>
+            <input
+                type="file"
+                name="excel_file"
+                accept=".xlsx,.xls"
+                required>
 
-                <br>
+            <br>
 
-                <button type="submit">
-                    Import Students
-                </button>
+            <button type="submit">
+                Import Students
+            </button>
 
-            </form>
-
-        </div>
-
-        <!-- Bulk Deactivate Students -->
-        <div class="card">
-
-            <h2>Bulk Deactivate Students</h2>
-
-            <p>
-                Upload an Excel file containing only the Roll Numbers
-                of students who have completed their studies.
-            </p>
-
-            <form
-                action="/bulk_deactivate_students"
-                method="POST"
-                enctype="multipart/form-data">
-
-                <input
-                    type="file"
-                    name="excel_file"
-                    accept=".xlsx,.xls"
-                    required>
-
-                <br>
-
-                <button
-                    type="submit"
-                    class="danger">
-                    Deactivate Students
-                </button>
-
-            </form>
-
-        </div>
+        </form>
 
     </div>
+
+    <!-- Deactivate Students -->
+    <div class="card">
+
+        <h2>Bulk Deactivate Students</h2>
+
+        <p>
+            Upload an Excel file containing only the
+            <b>roll_number</b> column of students who have
+            completed their studies.
+        </p>
+
+        <form action="/bulk_deactivate_students"
+              method="POST"
+              enctype="multipart/form-data">
+
+            <input
+                type="file"
+                name="excel_file"
+                accept=".xlsx,.xls"
+                required>
+
+            <br>
+
+            <button type="submit" class="danger">
+                Deactivate Students
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- SweetAlert Popup -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+
+    <script>
+
+    Swal.fire({
+
+        icon: "{{ 'success' if category == 'success' else 'error' }}",
+
+        title: "{{ 'Success' if category == 'success' else 'Error' }}",
+
+        text: "{{ message }}",
+
+        confirmButtonColor: "#003366"
+
+    });
+
+    </script>
+
+    {% endfor %}
+{% endif %}
+{% endwith %}
 
 </body>
 </html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Book Management</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            background:#f4f6f9;
+        }
+
+        .container{
+            width:90%;
+            max-width:1100px;
+            margin:40px auto;
+        }
+
+        h1{
+            text-align:center;
+            margin-bottom:30px;
+            color:#2c3e50;
+        }
+
+        .cards{
+            display:flex;
+            gap:30px;
+            flex-wrap:wrap;
+            justify-content:center;
+        }
+
+        .card{
+
+            width:480px;
+            background:white;
+            border-radius:12px;
+            padding:25px;
+            box-shadow:0px 4px 12px rgba(0,0,0,0.15);
+
+        }
+
+        h2{
+            text-align:center;
+            color:#007bff;
+            margin-bottom:20px;
+        }
+
+        input[type=file]{
+
+            width:100%;
+            padding:10px;
+            border:1px solid #ccc;
+            border-radius:6px;
+            margin-bottom:20px;
+
+        }
+
+        button{
+
+            width:100%;
+            padding:12px;
+            border:none;
+            color:white;
+            font-size:16px;
+            cursor:pointer;
+            border-radius:6px;
+
+        }
+
+        .import{
+
+            background:#28a745;
+
+        }
+
+        .import:hover{
+
+            background:#218838;
+
+        }
+
+        .delete{
+
+            background:#dc3545;
+
+        }
+
+        .delete:hover{
+
+            background:#c82333;
+
+        }
+
+        table{
+
+            width:100%;
+            border-collapse:collapse;
+            margin-top:20px;
+
+        }
+
+        table th{
+
+            background:#007bff;
+            color:white;
+            padding:10px;
+
+        }
+
+        table td{
+
+            border:1px solid #ddd;
+            padding:8px;
+            text-align:center;
+
+        }
+
+        .note{
+
+            margin-top:15px;
+            color:#555;
+            font-size:14px;
+
+        }
+
+        .back{
+
+            display:block;
+            width:220px;
+            margin:35px auto;
+            text-align:center;
+            text-decoration:none;
+            padding:12px;
+            background:#343a40;
+            color:white;
+            border-radius:6px;
+
+        }
+
+        .back:hover{
+
+            background:#23272b;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📚 Bulk Book Management</h1>
+
+<div class="cards">
+
+<!-- Import Books -->
+
+<div class="card">
+
+<h2>Bulk Import Books</h2>
+
+<form action="/bulk_import_books" method="POST" enctype="multipart/form-data">
+
+<input
+type="file"
+name="excel_file"
+accept=".xlsx,.xls"
+required>
+
+<button class="import" type="submit">
+Import Books
+</button>
+
+</form>
+
+<table>
+
+<tr>
+
+<th>book_number</th>
+<th>title</th>
+<th>author</th>
+<th>department</th>
+
+</tr>
+
+<tr>
+
+<td>CSE001</td>
+<td>Python Programming</td>
+<td>John Smith</td>
+<td>CSE</td>
+
+</tr>
+
+<tr>
+
+<td>EEE001</td>
+<td>Electrical Machines</td>
+<td>P. S. Bimbhra</td>
+<td>EEE</td>
+
+</tr>
+
+</table>
+
+<p class="note">
+Upload an Excel file with the above column names.
+Duplicate book numbers will be skipped automatically.
+</p>
+
+</div>
+
+<!-- Delete Books -->
+
+<div class="card">
+
+<h2>Bulk Delete Books</h2>
+
+<form action="/bulk_delete_books" method="POST" enctype="multipart/form-data">
+
+<input
+type="file"
+name="excel_file"
+accept=".xlsx,.xls"
+required>
+
+<button class="delete" type="submit">
+Delete Books
+</button>
+
+</form>
+
+<table>
+
+<tr>
+
+<th>book_number</th>
+
+</tr>
+
+<tr>
+
+<td>CSE001</td>
+
+</tr>
+
+<tr>
+
+<td>EEE001</td>
+
+</tr>
+
+</table>
+
+<p class="note">
+Upload an Excel file containing only the
+<b>book_number</b> column.
+Matching books will be deleted.
+</p>
+
+</div>
+
+</div>
+
+<a href="/books" class="back">
+⬅ Back to Books
+</a>
+
+</div>
+
+<!-- SweetAlert Popup -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+
+<script>
+
+Swal.fire({
+
+icon: "{{ category }}",
+
+title:
+"{% if category=='success' %}Success{% else %}Error{% endif %}",
+
+text: "{{ message }}",
+
+confirmButtonColor:"#3085d6"
+
+});
+
+</script>
+
+    {% endfor %}
+{% endif %}
+{% endwith %}
+
+</body>
+</html>
