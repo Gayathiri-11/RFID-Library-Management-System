@@ -15,11 +15,13 @@ if os.environ.get("RENDER"):
     arduino = None
 else:
     try:
-        arduino = serial.Serial('COM5', 9600, timeout=1)
+        arduino = serial.Serial("COM5", 9600, timeout=1)
         time.sleep(2)
         print("Arduino Connected")
-    except:
+    except Exception as e:
+        print(e)
         arduino = None
+
 @app.route("/")
 def home():
     return render_template("dashboard.html")
@@ -1007,13 +1009,21 @@ def bulk_delete_books():
 @app.route("/get_uid")
 def get_uid():
 
-    if ser.in_waiting:
+    try:
 
-        uid=ser.readline().decode().strip()
+        if arduino is None:
+            return ""
 
-        return uid
+        if arduino.in_waiting > 0:
+            uid = arduino.readline().decode("utf-8").strip()
+            print("UID:", uid)
+            return uid
 
-    return ""
+        return ""
+
+    except Exception as e:
+        print("GET_UID ERROR:", e)
+        return ""
 @app.route("/save_book_uid", methods=["POST"])
 def save_book_uid():
 
