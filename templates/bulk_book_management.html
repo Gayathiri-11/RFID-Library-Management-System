@@ -1,119 +1,108 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Bulk Book Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Bulk Book Management</title>
 
-<style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-body{
-    font-family:Arial,sans-serif;
-    background:#f4f6f9;
-    margin:0;
-    padding:0;
-}
+    <style>
 
-.container{
-    margin-left:240px;
-    padding:20px;
-}
+        body{
+            font-family:Arial, sans-serif;
+            background:#f4f6f9;
+            margin:0;
+            padding:0;
+        }
 
-h1{
-    text-align:center;
-    color:#003366;
-    margin-bottom:30px;
-}
+        .container{
+            margin-left:240px;
+            padding:20px;
+        }
 
-.card{
-    background:white;
-    padding:25px;
-    margin-bottom:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px lightgray;
-}
+        h1{
+            text-align:center;
+            color:#003366;
+            margin-bottom:30px;
+        }
 
-h2{
-    margin-top:0;
-    color:#003366;
-}
+        .card{
+            background:white;
+            padding:25px;
+            margin-bottom:25px;
+            border-radius:10px;
+            box-shadow:0 0 10px lightgray;
+        }
 
-button{
-    background:#003366;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:5px;
-    cursor:pointer;
-}
+        h2{
+            margin-top:0;
+            color:#003366;
+        }
 
-button:hover{
-    background:#0055aa;
-}
+        p{
+            color:#555;
+            line-height:1.7;
+        }
 
-.danger{
-    background:#dc3545;
-}
+        input[type=file]{
+            margin-top:15px;
+            margin-bottom:20px;
+        }
 
-.danger:hover{
-    background:#b02a37;
-}
+        button{
 
-input[type=file]{
-    margin:15px 0;
-}
+            background:#003366;
+            color:white;
+            border:none;
+            padding:10px 20px;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:15px;
 
-.book-box{
+        }
 
-    margin-top:20px;
-    padding:20px;
-    background:#f8f9fa;
-    border-radius:8px;
-    border-left:6px solid #003366;
+        button:hover{
 
-}
+            background:#0055aa;
 
-.book-box p{
+        }
 
-    margin:8px 0;
-    font-size:18px;
+        .danger{
 
-}
+            background:#dc3545;
 
-.status{
+        }
 
-    color:green;
-    font-weight:bold;
-    font-size:18px;
+        .danger:hover{
 
-}
+            background:#b02a37;
 
-.progress{
+        }
 
-    width:100%;
-    background:#ddd;
-    border-radius:20px;
-    overflow:hidden;
-    margin-top:15px;
+        .info{
 
-}
+            background:#198754;
 
-.progress-bar{
+        }
 
-    height:25px;
-    width:0%;
-    background:#28a745;
-    text-align:center;
-    color:white;
-    line-height:25px;
-    transition:.4s;
+        .info:hover{
 
-}
+            background:#146c43;
 
-</style>
+        }
+
+        ul{
+
+            line-height:2;
+
+        }
+
+    </style>
 
 </head>
 
@@ -125,24 +114,29 @@ input[type=file]{
 
 <h1>Bulk Book Management</h1>
 
-<!-- IMPORT -->
+<!-- Import -->
 
 <div class="card">
 
 <h2>Bulk Import Books</h2>
 
 <p>
-Excel Columns:
-<br><br>
 
-<b>
-book_number,
-book_name,
-author,
-category
-</b>
+Upload an Excel file containing the following columns:
 
 </p>
+
+<ul>
+
+<li><b>book_number</b></li>
+
+<li><b>book_name</b></li>
+
+<li><b>author</b></li>
+
+<li><b>category</b></li>
+
+</ul>
 
 <form
 action="/bulk_import_books"
@@ -157,7 +151,7 @@ required>
 
 <br>
 
-<button>
+<button type="submit">
 
 Import Books
 
@@ -167,93 +161,7 @@ Import Books
 
 </div>
 
-<!-- RFID -->
-
-<div class="card">
-
-<h2>Automatic RFID Registration</h2>
-
-<div class="book-box">
-
-<p>
-
-<b>Book Number :</b>
-
-<span id="book_number">
-
-Loading...
-
-</span>
-
-</p>
-
-<p>
-
-<b>Book Name :</b>
-
-<span id="book_name">
-
-Loading...
-
-</span>
-
-</p>
-
-<p class="status">
-
-<span id="status">
-
-Waiting for RFID...
-
-</span>
-
-</p>
-
-</div>
-
-<br>
-
-<h3>
-
-Progress
-
-</h3>
-
-<p>
-
-Mapped :
-
-<span id="mapped">
-
-0
-
-</span>
-
-/
-
-<span id="total">
-
-0
-
-</span>
-
-</p>
-
-<div class="progress">
-
-<div
-class="progress-bar"
-id="progressBar">
-
-0%
-
-</div>
-
-</div>
-
-</div>
-
-<!-- DELETE -->
+<!-- Delete -->
 
 <div class="card">
 
@@ -261,13 +169,9 @@ id="progressBar">
 
 <p>
 
-Upload an Excel containing only
+Upload an Excel file containing only
 
-<b>
-
-book_number
-
-</b>
+<b>book_number</b>
 
 column.
 
@@ -287,7 +191,9 @@ required>
 
 <br>
 
-<button class="danger">
+<button
+type="submit"
+class="danger">
 
 Delete Books
 
@@ -297,164 +203,45 @@ Delete Books
 
 </div>
 
+<!-- Information -->
+
+<div class="card">
+
+<h2>Instructions</h2>
+
+<ul>
+
+<li>Import books using Excel.</li>
+
+<li>Duplicate Book Numbers are skipped automatically.</li>
+
+<li>Imported books are stored without RFID.</li>
+
+<li>Assign RFID later from the <b>Add Book</b> page.</li>
+
+<li>Delete books using another Excel file containing only Book Numbers.</li>
+
+</ul>
+
+</div>
+
 </div>
 
 <script>
 
-let currentBook="";
-
-function loadBook(){
-
-fetch("/next_book")
-
-.then(res=>res.json())
-
-.then(data=>{
-
-if(Object.keys(data).length===0){
-
-document.getElementById("book_number").innerHTML="-";
-
-document.getElementById("book_name").innerHTML="All Books Completed";
-
-document.getElementById("status").innerHTML="🎉 RFID Registration Completed";
-
-return;
-
-}
-
-currentBook=data.book_number;
-
-document.getElementById("book_number").innerHTML=data.book_number;
-
-document.getElementById("book_name").innerHTML=data.book_name;
-
-document.getElementById("status").innerHTML="Waiting for RFID...";
-
-});
-
-}
-
-function readRFID(){
-
-fetch("/get_uid")
-
-.then(res=>res.text())
-
-.then(uid=>{
-
-uid=uid.trim();
-
-if(uid==="") return;
-
-document.getElementById("status").innerHTML="RFID Detected : "+uid;
-
-saveUID(uid);
-
-});
-
-}
-
-function saveUID(uid){
-
-fetch("/save_book_uid",{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({
-
-uid:uid,
-
-book_number:currentBook
-
-})
-
-})
-
-.then(res=>res.json())
-
-.then(data=>{
-
-if(data.success){
-
-document.getElementById("status").innerHTML="Saved Successfully";
-
-loadProgress();
-
-setTimeout(loadBook,500);
-
-}
-
-else{
-
-Swal.fire({
-
-icon:"error",
-
-title:"Error",
-
-text:data.message
-
-});
-
-}
-
-});
-
-}
-
-function loadProgress(){
-
-fetch("/bulk_progress")
-
-.then(res=>res.json())
-
-.then(data=>{
-
-document.getElementById("mapped").innerHTML=data.mapped;
-
-document.getElementById("total").innerHTML=data.total;
-
-let percent=0;
-
-if(data.total>0){
-
-percent=(data.mapped/data.total)*100;
-
-}
-
-document.getElementById("progressBar").style.width=percent+"%";
-
-document.getElementById("progressBar").innerHTML=Math.round(percent)+"%";
-
-});
-
-}
-
 function confirmDelete(){
 
-return confirm("Are you sure you want to delete these books?");
+    return confirm(
+        "Are you sure you want to delete the selected books?"
+    );
 
 }
-
-loadBook();
-
-loadProgress();
-
-setInterval(readRFID,500);
-
-setInterval(loadProgress,3000);
 
 </script>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
+
 {% for category,message in messages %}
 
 <script>
@@ -474,8 +261,10 @@ confirmButtonColor:"#003366"
 </script>
 
 {% endfor %}
+
 {% endif %}
 {% endwith %}
 
 </body>
+
 </html>

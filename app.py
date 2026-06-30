@@ -938,21 +938,26 @@ def bulk_import_books():
         conn.close()
 
     return redirect("/bulk_book_management")
-@app.route("/next_book")
-def next_book():
+@app.route("/assign_rfid")
+def assign_rfid():
+
+    return render_template("assign_rfid.html")
+@app.route("/get_book_details/<book_number>")
+def get_book_details(book_number):
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-    SELECT
-        book_number,
-        book_name
-    FROM books
-    WHERE uid IS NULL
-    ORDER BY book_number
-    LIMIT 1
-    """)
+        SELECT
+            book_number,
+            book_name,
+            author,
+            category,
+            uid
+        FROM books
+        WHERE book_number=%s
+    """, (book_number,))
 
     book = cursor.fetchone()
 
@@ -971,52 +976,80 @@ def get_uid():
         if arduino is None:
             return ""
 
-        if arduino.in_waiting:
+        if arduino.in_waiting > 0:
 
-            uid = arduino.readline().decode().strip()
+            uid = arduino.readline().decode("utf-8").strip()
+
+            print(uid)
 
             return uid
 
         return ""
 
-    except:
+    except Exception as e:
+
+        print(e)
 
         return ""
-@app.route("/save_book_uid", methods=["POST"])
-def save_book_uid():
+@app.route("/assign_book_uid", methods=["POST"])
+def assign_book_uid():
 
     data = request.get_json()
 
-    uid = data["uid"]
-    book_number = data["book_number"]
+    uid = data["uid"].strip()
+    book_number = data["book_number"].strip()
 
     conn = get_connection()
     cursor = conn.cursor()
 
     try:
 
-        cursor.execute(
-            "SELECT * FROM books WHERE uid=%s",
-            (uid,)
-        )
-
-        if cursor.fetchone():
-
-            return jsonify({
-                "success":False,
-                "message":"RFID Already Exists"
-            })
+        # Check book exists
 
         cursor.execute("""
-        UPDATE books
-        SET uid=%s
-        WHERE book_number=%s
-        """,(uid,book_number))
+            SELECT uid
+            FROM books
+            WHERE book_number=%s
+        """, (book_number,))
+
+        book = cursor.fetchone()
+
+        if not book:
+
+            return jsonify({
+                "success": False,
+                "message": "Book Number not found."
+            })
+
+        # Check RFID already used
+
+        cursor.execute("""
+            SELECT book_number
+            FROM books
+            WHERE uid=%s
+        """, (uid,))
+
+        existing = cursor.fetchone()
+
+        if existing:
+
+            return jsonify({
+                "success": False,
+                "message": "RFID already assigned to another book."
+            })
+
+        # Save RFID
+
+        cursor.execute("""
+            UPDATE books
+            SET uid=%s
+            WHERE book_number=%s
+        """, (uid, book_number))
 
         conn.commit()
 
         return jsonify({
-            "success":True
+            "success": True
         })
 
     except Exception as e:
@@ -1024,34 +1057,14 @@ def save_book_uid():
         conn.rollback()
 
         return jsonify({
-            "success":False,
-            "message":str(e)
+            "success": False,
+            "message": str(e)
         })
 
     finally:
 
         cursor.close()
         conn.close()
-@app.route("/bulk_progress")
-def bulk_progress():
-
-    conn=get_connection()
-    cursor=conn.cursor()
-
-    cursor.execute("SELECT COUNT(*) FROM books")
-    total=cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM books WHERE uid IS NOT NULL")
-    mapped=cursor.fetchone()[0]
-
-    cursor.close()
-    conn.close()
-
-    return jsonify({
-        "total":total,
-        "mapped":mapped,
-        "remaining":total-mapped
-    })
 @app.route("/bulk_delete_books", methods=["POST"])
 def bulk_delete_books():
 

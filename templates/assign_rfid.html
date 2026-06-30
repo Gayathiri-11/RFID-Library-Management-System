@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Assign RFID</title>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:0;
+}
+
+.container{
+
+    width:550px;
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px lightgray;
+
+    position:absolute;
+    top:50%;
+    left:calc(50% + 110px);
+    transform:translate(-50%,-50%);
+}
+
+h1{
+
+    text-align:center;
+    color:#003366;
+}
+
+label{
+
+    font-weight:bold;
+}
+
+input{
+
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:15px;
+    border:1px solid #ccc;
+    border-radius:5px;
+    box-sizing:border-box;
+}
+
+button{
+
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:5px;
+    color:white;
+    cursor:pointer;
+    margin-top:10px;
+    font-size:15px;
+}
+
+.search-btn{
+
+    background:#0066cc;
+}
+
+.scan-btn{
+
+    background:#28a745;
+}
+
+.assign-btn{
+
+    background:#003366;
+}
+
+.info{
+
+    background:#f8f9fa;
+    padding:15px;
+    border-left:5px solid #003366;
+    border-radius:6px;
+    margin-top:20px;
+}
+
+.info p{
+
+    margin:8px 0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+{% include "sidebar.html" %}
+
+<div class="container">
+
+<h1>Assign RFID</h1>
+
+<label>Book Number</label>
+
+<input
+type="text"
+id="book_number"
+placeholder="Enter Book Number">
+
+<button
+type="button"
+class="search-btn"
+onclick="loadBook()">
+
+Search Book
+
+</button>
+
+<div
+class="info"
+id="bookInfo"
+style="display:none;">
+
+<p>
+
+<b>Book Name :</b>
+
+<span id="book_name"></span>
+
+</p>
+
+<p>
+
+<b>Author :</b>
+
+<span id="author"></span>
+
+</p>
+
+<p>
+
+<b>Category :</b>
+
+<span id="category"></span>
+
+</p>
+
+<p>
+
+<b>Current RFID :</b>
+
+<span id="current_uid"></span>
+
+</p>
+
+</div>
+
+<label>RFID UID</label>
+
+<input
+type="text"
+id="uid"
+readonly>
+
+<button
+type="button"
+class="scan-btn"
+onclick="scanRFID()">
+
+Scan RFID
+
+</button>
+
+<button
+type="button"
+class="assign-btn"
+onclick="assignRFID()">
+
+Assign RFID
+
+</button>
+
+</div>
+
+<script>
+
+function loadBook(){
+
+let book=document.getElementById("book_number").value.trim();
+
+if(book===""){
+
+Swal.fire("Error","Enter Book Number","error");
+
+return;
+
+}
+
+fetch("/get_book_details/"+book)
+
+.then(r=>r.json())
+
+.then(data=>{
+
+if(Object.keys(data).length===0){
+
+Swal.fire("Not Found","Book not found","error");
+
+return;
+
+}
+
+document.getElementById("bookInfo").style.display="block";
+
+document.getElementById("book_name").innerHTML=data.book_name;
+
+document.getElementById("author").innerHTML=data.author;
+
+document.getElementById("category").innerHTML=data.category;
+
+document.getElementById("current_uid").innerHTML=data.uid || "Not Assigned";
+
+});
+
+}
+
+function scanRFID(){
+
+fetch("/get_uid")
+
+.then(r=>r.text())
+
+.then(uid=>{
+
+uid=uid.trim();
+
+if(uid===""){
+
+Swal.fire("Waiting","Scan RFID Tag","info");
+
+return;
+
+}
+
+document.getElementById("uid").value=uid;
+
+});
+
+}
+
+function assignRFID(){
+
+let uid=document.getElementById("uid").value;
+
+let book=document.getElementById("book_number").value;
+
+if(uid===""){
+
+Swal.fire("Error","Scan RFID First","error");
+
+return;
+
+}
+
+fetch("/assign_book_uid",{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+uid:uid,
+
+book_number:book
+
+})
+
+})
+
+.then(r=>r.json())
+
+.then(data=>{
+
+if(data.success){
+
+Swal.fire({
+
+icon:"success",
+
+title:"Success",
+
+text:"RFID Assigned Successfully"
+
+});
+
+document.getElementById("uid").value="";
+
+loadBook();
+
+}
+
+else{
+
+Swal.fire({
+
+icon:"error",
+
+title:"Error",
+
+text:data.message
+
+});
+
+}
+
+});
+
+}
+
+</script>
+
+</body>
+
+</html>
