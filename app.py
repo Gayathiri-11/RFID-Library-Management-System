@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
+from flask import Flask, render_template, request, redirect, flash, jsonify, url_for, session, send_file
 import mysql.connector
 from datetime import datetime, timedelta
 import serial
