@@ -31,64 +31,85 @@ h1{
 .card{
     background:white;
     padding:25px;
-    margin-bottom:25px;
+    margin-bottom:20px;
     border-radius:10px;
     box-shadow:0 0 10px lightgray;
 }
 
 h2{
-    color:#003366;
     margin-top:0;
-}
-
-p{
-    color:#555;
-}
-
-label{
-    font-weight:bold;
-}
-
-input[type=file],
-input[type=text],
-select{
-
-    width:100%;
-    padding:10px;
-    margin-top:10px;
-    margin-bottom:15px;
-    border:1px solid #ccc;
-    border-radius:5px;
-
+    color:#003366;
 }
 
 button{
-
     background:#003366;
     color:white;
     border:none;
     padding:10px 20px;
     border-radius:5px;
     cursor:pointer;
-    font-size:15px;
-
 }
 
 button:hover{
-
     background:#0055aa;
-
 }
 
 .danger{
-
-    background:#d9534f;
-
+    background:#dc3545;
 }
 
 .danger:hover{
+    background:#b02a37;
+}
 
-    background:#b52b27;
+input[type=file]{
+    margin:15px 0;
+}
+
+.book-box{
+
+    margin-top:20px;
+    padding:20px;
+    background:#f8f9fa;
+    border-radius:8px;
+    border-left:6px solid #003366;
+
+}
+
+.book-box p{
+
+    margin:8px 0;
+    font-size:18px;
+
+}
+
+.status{
+
+    color:green;
+    font-weight:bold;
+    font-size:18px;
+
+}
+
+.progress{
+
+    width:100%;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:15px;
+
+}
+
+.progress-bar{
+
+    height:25px;
+    width:0%;
+    background:#28a745;
+    text-align:center;
+    color:white;
+    line-height:25px;
+    transition:.4s;
 
 }
 
@@ -103,173 +124,354 @@ button:hover{
 <div class="container">
 
 <h1>Bulk Book Management</h1>
-<!-- ===================================== -->
-<!-- BULK IMPORT BOOKS -->
-<!-- ===================================== -->
+
+<!-- IMPORT -->
 
 <div class="card">
 
-    <h2>Bulk Import Books</h2>
+<h2>Bulk Import Books</h2>
 
-    <p>
-        Upload an Excel file containing the following columns:
-        <br><br>
-        <b>book_number, book_name, author, category</b>
-    </p>
+<p>
+Excel Columns:
+<br><br>
 
-    <form
-        action="/bulk_import_books"
-        method="POST"
-        enctype="multipart/form-data">
+<b>
+book_number,
+book_name,
+author,
+category
+</b>
 
-        <input
-            type="file"
-            name="excel_file"
-            accept=".xlsx,.xls"
-            required>
+</p>
 
-        <br>
+<form
+action="/bulk_import_books"
+method="POST"
+enctype="multipart/form-data">
 
-        <button type="submit">
-            Import Books
-        </button>
+<input
+type="file"
+name="excel_file"
+accept=".xlsx,.xls"
+required>
 
-    </form>
+<br>
 
-</div>
-<div class="card">
+<button>
 
-    <h2>Map RFID Tag to Book</h2>
+Import Books
 
-    <p>
-        Select a book, scan the RFID sticker using the RFID reader,
-        then click <b>Map RFID Tag</b>.
-    </p>
+</button>
 
-    <form action="/save_book_uid" method="POST">
-
-        <label>Select Book</label>
-
-        <select
-            name="book_number"
-            required>
-
-            <option value="">-- Select Book --</option>
-
-            {% for book in books %}
-
-            <option value="{{ book.book_number }}">
-                {{ book.book_number }} - {{ book.book_name}}
-            </option>
-
-            {% endfor %}
-
-        </select>
-
-        <label>RFID UID</label>
-
-        <input
-            type="text"
-            id="uid"
-            name="uid"
-            placeholder="Scan RFID Tag..."
-            readonly
-            required>
-
-        <button type="submit">
-            Map RFID Tag
-        </button>
-
-    </form>
+</form>
 
 </div>
-<!-- ===================================== -->
-<!-- BULK DELETE BOOKS -->
-<!-- ===================================== -->
+
+<!-- RFID -->
 
 <div class="card">
 
-    <h2>Bulk Delete Books</h2>
+<h2>Automatic RFID Registration</h2>
 
-    <p>
-        Upload an Excel file containing only the
-        <b>book_number</b> column.
-    </p>
+<div class="book-box">
 
-    <form
-        action="/bulk_delete_books"
-        method="POST"
-        enctype="multipart/form-data">
+<p>
 
-        <input
-            type="file"
-            name="excel_file"
-            accept=".xlsx,.xls"
-            required>
+<b>Book Number :</b>
 
-        <br>
+<span id="book_number">
 
-        <button
-            type="submit"
-            class="danger">
-            Delete Books
-        </button>
+Loading...
 
-    </form>
+</span>
+
+</p>
+
+<p>
+
+<b>Book Name :</b>
+
+<span id="book_name">
+
+Loading...
+
+</span>
+
+</p>
+
+<p class="status">
+
+<span id="status">
+
+Waiting for RFID...
+
+</span>
+
+</p>
 
 </div>
+
+<br>
+
+<h3>
+
+Progress
+
+</h3>
+
+<p>
+
+Mapped :
+
+<span id="mapped">
+
+0
+
+</span>
+
+/
+
+<span id="total">
+
+0
+
+</span>
+
+</p>
+
+<div class="progress">
+
+<div
+class="progress-bar"
+id="progressBar">
+
+0%
+
+</div>
+
+</div>
+
+</div>
+
+<!-- DELETE -->
+
+<div class="card">
+
+<h2>Bulk Delete Books</h2>
+
+<p>
+
+Upload an Excel containing only
+
+<b>
+
+book_number
+
+</b>
+
+column.
+
+</p>
+
+<form
+action="/bulk_delete_books"
+method="POST"
+enctype="multipart/form-data"
+onsubmit="return confirmDelete();">
+
+<input
+type="file"
+name="excel_file"
+accept=".xlsx,.xls"
+required>
+
+<br>
+
+<button class="danger">
+
+Delete Books
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<script>
+
+let currentBook="";
+
+function loadBook(){
+
+fetch("/next_book")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(Object.keys(data).length===0){
+
+document.getElementById("book_number").innerHTML="-";
+
+document.getElementById("book_name").innerHTML="All Books Completed";
+
+document.getElementById("status").innerHTML="🎉 RFID Registration Completed";
+
+return;
+
+}
+
+currentBook=data.book_number;
+
+document.getElementById("book_number").innerHTML=data.book_number;
+
+document.getElementById("book_name").innerHTML=data.book_name;
+
+document.getElementById("status").innerHTML="Waiting for RFID...";
+
+});
+
+}
+
+function readRFID(){
+
+fetch("/get_uid")
+
+.then(res=>res.text())
+
+.then(uid=>{
+
+uid=uid.trim();
+
+if(uid==="") return;
+
+document.getElementById("status").innerHTML="RFID Detected : "+uid;
+
+saveUID(uid);
+
+});
+
+}
+
+function saveUID(uid){
+
+fetch("/save_book_uid",{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+uid:uid,
+
+book_number:currentBook
+
+})
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(data.success){
+
+document.getElementById("status").innerHTML="Saved Successfully";
+
+loadProgress();
+
+setTimeout(loadBook,500);
+
+}
+
+else{
+
+Swal.fire({
+
+icon:"error",
+
+title:"Error",
+
+text:data.message
+
+});
+
+}
+
+});
+
+}
+
+function loadProgress(){
+
+fetch("/bulk_progress")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+document.getElementById("mapped").innerHTML=data.mapped;
+
+document.getElementById("total").innerHTML=data.total;
+
+let percent=0;
+
+if(data.total>0){
+
+percent=(data.mapped/data.total)*100;
+
+}
+
+document.getElementById("progressBar").style.width=percent+"%";
+
+document.getElementById("progressBar").innerHTML=Math.round(percent)+"%";
+
+});
+
+}
+
+function confirmDelete(){
+
+return confirm("Are you sure you want to delete these books?");
+
+}
+
+loadBook();
+
+loadProgress();
+
+setInterval(readRFID,500);
+
+setInterval(loadProgress,3000);
+
+</script>
+
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
-{% for category, message in messages %}
+{% for category,message in messages %}
 
 <script>
 
 Swal.fire({
-    icon: "{{ category }}",
-    title: "{{ 'Success' if category=='success' else 'Error' }}",
-    text: "{{ message }}",
-    confirmButtonColor:"#003366"
+
+icon:"{{ 'success' if category=='success' else 'error' }}",
+
+title:"{{ 'Success' if category=='success' else 'Error' }}",
+
+text:"{{ message }}",
+
+confirmButtonColor:"#003366"
+
 });
 
 </script>
-
-{% endfor %}
-{% endif %}
-{% endwith %}
-</div>
-
-<script>
-
-setInterval(function(){
-
-    fetch("/get_uid")
-    .then(response => response.text())
-    .then(uid => {
-
-        uid = uid.trim();
-
-        if(uid !== ""){
-            document.getElementById("uid").value = uid;
-        }
-
-    });
-
-},1000);
-
-</script>
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-  {% for category, message in messages %}
-
-    <script>
-    Swal.fire({
-     icon:"{{category}}",
-     title:"{{'Success' if category=='success' else 'Error'}}",
-     text:"{{message}}",
-     confirmButtonColor:"#003366"
-    });
-    </script>
 
 {% endfor %}
 {% endif %}

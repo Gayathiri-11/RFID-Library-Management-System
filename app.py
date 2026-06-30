@@ -866,147 +866,103 @@ def export_overdue_report():
     )
 @app.route("/bulk_book_management")
 def bulk_book_management():
+    return render_template("bulk_book_management.html")
+@app.route("/bulk_import_books", methods=["POST"])
+def bulk_import_books():
+
+    if "excel_file" not in request.files:
+        flash("No file selected", "error")
+        return redirect("/bulk_book_management")
+
+    file = request.files["excel_file"]
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        df = pd.read_excel(file)
+        df.columns = df.columns.str.strip().str.lower()
+
+        required = [
+            "book_number",
+            "book_name",
+            "author",
+            "category"
+        ]
+
+        for col in required:
+            if col not in df.columns:
+                flash(f"Missing column : {col}", "error")
+                return redirect("/bulk_book_management")
+
+        count = 0
+
+        for _, row in df.iterrows():
+
+            cursor.execute(
+                "SELECT * FROM books WHERE book_number=%s",
+                (str(row["book_number"]).strip(),)
+            )
+
+            if cursor.fetchone():
+                continue
+
+            cursor.execute("""
+            INSERT INTO books
+            (book_number,book_name,author,category)
+            VALUES(%s,%s,%s,%s)
+            """,(
+
+                str(row["book_number"]).strip(),
+                str(row["book_name"]).strip(),
+                str(row["author"]).strip(),
+                str(row["category"]).strip()
+
+            ))
+
+            count += 1
+
+        conn.commit()
+
+        flash(f"{count} Books Imported Successfully","success")
+
+    except Exception as e:
+
+        conn.rollback()
+        flash(str(e),"error")
+
+    finally:
+
+        cursor.close()
+        conn.close()
+
+    return redirect("/bulk_book_management")
+@app.route("/next_book")
+def next_book():
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT book_number, book_name
-        FROM books
-        WHERE uid IS NULL
-        ORDER BY book_number
+    SELECT
+        book_number,
+        book_name
+    FROM books
+    WHERE uid IS NULL
+    ORDER BY book_number
+    LIMIT 1
     """)
 
-    books = cursor.fetchall()
+    book = cursor.fetchone()
 
     cursor.close()
     conn.close()
 
-    return render_template(
-        "bulk_book_management.html",
-        books=books
-    )
-@app.route("/bulk_import_books", methods=["POST"])
-def bulk_import_books():
+    if book:
+        return jsonify(book)
 
-    if "excel_file" not in request.files:
-        flash("No file uploaded.", "error")
-        return redirect("/bulk_book_management")
-
-    file = request.files["excel_file"]
-
-    if file.filename == "":
-        flash("Please select an Excel file.", "error")
-        return redirect("/bulk_book_management")
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    imported_count = 0
-    skipped_count = 0
-
-    try:
-
-        df = pd.read_excel(file)
-        df.columns = df.columns.str.strip().str.lower()
-
-        required_columns = ["book_number", "book_name", "author", "category"]
-
-        for column in required_columns:
-            if column not in df.columns:
-                flash(f"Missing column: {column}", "error")
-                return redirect("/bulk_book_management")
-
-        for _, row in df.iterrows():
-
-            book_number = str(row["book_number"]).strip()
-
-            cursor.execute(
-                "SELECT * FROM books WHERE book_number=%s",
-                (book_number,)
-            )
-
-            if cursor.fetchone():
-                skipped_count += 1
-                continue
-
-            cursor.execute("""
-                INSERT INTO books
-                (book_number, book_name, author, category)
-                VALUES (%s, %s, %s, %s)
-            """, (
-                book_number,
-                str(row["book_name"]).strip(),
-                str(row["author"]).strip(),
-                str(row["category"]).strip()
-            ))
-
-            imported_count += 1
-        conn.commit()
-
-        flash(f"{imported_count} books imported successfully!", "success")
-    
-    except Exception as e:
-
-        conn.rollback()
-        flash(f"Error importing books: {e}", "error")
-
-    finally:
-
-        cursor.close()
-        conn.close()
-
-    return redirect("/bulk_book_management")
-@app.route("/bulk_delete_books", methods=["POST"])
-def bulk_delete_books():
-
-    if "excel_file" not in request.files:
-        flash("No file uploaded.", "error")
-        return redirect("/bulk_book_management")
-
-    file = request.files["excel_file"]
-
-    if file.filename == "":
-        flash("Please select an Excel file.", "error")
-        return redirect("/bulk_book_management")
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    deleted_count = 0
-
-    try:
-
-        df = pd.read_excel(file)
-        df.columns = df.columns.str.strip().str.lower()
-
-        if "book_number" not in df.columns:
-            flash("Excel file must contain 'book_number' column.", "error")
-            return redirect("/bulk_book_management")
-
-        for _, row in df.iterrows():
-
-            book_number = str(row["book_number"]).strip()
-
-            cursor.execute(
-                "DELETE FROM books WHERE book_number=%s",
-                (book_number,)
-            )
-
-            deleted_count += cursor.rowcount
-        conn.commit()
-
-        flash(f"{deleted_count} books deleted successfully!", "success")        
-    except Exception as e:
-        conn.rollback()
-        flash(f"Error deleting books: {e}", "error")
-
-    finally:
-
-        cursor.close()
-        conn.close()
-
-    return redirect("/bulk_book_management")
+    return jsonify({})
 @app.route("/get_uid")
 def get_uid():
 
@@ -1015,50 +971,141 @@ def get_uid():
         if arduino is None:
             return ""
 
-        if arduino.in_waiting > 0:
-            uid = arduino.readline().decode("utf-8").strip()
-            print("UID:", uid)
+        if arduino.in_waiting:
+
+            uid = arduino.readline().decode().strip()
+
             return uid
 
         return ""
 
-    except Exception as e:
-        print("GET_UID ERROR:", e)
+    except:
+
         return ""
 @app.route("/save_book_uid", methods=["POST"])
 def save_book_uid():
 
-    uid = request.form["uid"].strip()
-    book_number = request.form["book_number"].strip()
+    data = request.get_json()
 
-    if uid == "":
-        flash("Please scan an RFID tag first.", "error")
-        return redirect("/bulk_book_management")
+    uid = data["uid"]
+    book_number = data["book_number"]
 
     conn = get_connection()
     cursor = conn.cursor()
 
     try:
 
-        # Check whether this RFID tag is already assigned
         cursor.execute(
-            "SELECT book_number FROM books WHERE uid=%s",
+            "SELECT * FROM books WHERE uid=%s",
             (uid,)
         )
 
         if cursor.fetchone():
-            flash("This RFID tag is already mapped.", "error")
-            return redirect("/bulk_book_management")
+
+            return jsonify({
+                "success":False,
+                "message":"RFID Already Exists"
+            })
 
         cursor.execute("""
-            UPDATE books
-            SET uid=%s
-            WHERE book_number=%s
-        """, (uid, book_number))
+        UPDATE books
+        SET uid=%s
+        WHERE book_number=%s
+        """,(uid,book_number))
 
         conn.commit()
 
-        flash("RFID Tag Mapped Successfully!", "success")
+        return jsonify({
+            "success":True
+        })
+
+    except Exception as e:
+
+        conn.rollback()
+
+        return jsonify({
+            "success":False,
+            "message":str(e)
+        })
+
+    finally:
+
+        cursor.close()
+        conn.close()
+@app.route("/bulk_progress")
+def bulk_progress():
+
+    conn=get_connection()
+    cursor=conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM books")
+    total=cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM books WHERE uid IS NOT NULL")
+    mapped=cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+        "total":total,
+        "mapped":mapped,
+        "remaining":total-mapped
+    })
+@app.route("/bulk_delete_books", methods=["POST"])
+def bulk_delete_books():
+
+    if "excel_file" not in request.files:
+        flash("Please upload an Excel file.", "error")
+        return redirect("/bulk_book_management")
+
+    file = request.files["excel_file"]
+
+    if file.filename == "":
+        flash("Please select an Excel file.", "error")
+        return redirect("/bulk_book_management")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    deleted = 0
+    skipped = 0
+
+    try:
+
+        df = pd.read_excel(file)
+        df.columns = df.columns.str.strip().str.lower()
+
+        if "book_number" not in df.columns:
+            flash("Excel must contain 'book_number' column.", "error")
+            return redirect("/bulk_book_management")
+
+        for _, row in df.iterrows():
+
+            book_number = str(row["book_number"]).strip()
+
+            cursor.execute(
+                "SELECT book_number FROM books WHERE book_number=%s",
+                (book_number,)
+            )
+
+            if not cursor.fetchone():
+                skipped += 1
+                continue
+
+            cursor.execute(
+                "DELETE FROM books WHERE book_number=%s",
+                (book_number,)
+            )
+
+            deleted += 1
+
+        conn.commit()
+
+        flash(
+            f"{deleted} books deleted successfully. {skipped} books were not found.",
+            "success"
+        )
 
     except Exception as e:
 
