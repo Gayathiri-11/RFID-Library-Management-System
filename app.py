@@ -526,44 +526,86 @@ def issue_book():
         uid = request.form.get("uid")
         roll_number = request.form.get("roll_number")
 
-        if not uid:
-            return "UID Required"
-
         conn = get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
+
+        # Check Book
+        cursor.execute(
+            "SELECT * FROM books WHERE uid=%s",
+            (uid,)
+        )
+        book = cursor.fetchone()
+
+        if not book:
+            conn.close()
+            return render_template(
+                "issue_book.html",
+                message="Book not found"
+            )
+
+        if book["status"] != "Available":
+            conn.close()
+            return render_template(
+                "issue_book.html",
+                message="Book is already issued"
+            )
+
+        # Check Student
+        cursor.execute(
+            "SELECT * FROM students WHERE roll_number=%s AND status='Active'",
+            (roll_number,)
+        )
+        student = cursor.fetchone()
+
+        if not student:
+            conn.close()
+            return render_template(
+                "issue_book.html",
+                message="Student not found"
+            )
 
         try:
+
+            issue_date = datetime.now()
+            due_date = issue_date + timedelta(days=15)
+
             cursor.execute("""
                 INSERT INTO transactions
-                (uid, roll_number, issue_date, due_date, status)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (
+                (uid, roll_number, issue_date, due_date, status, fine)
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """,(
                 uid,
                 roll_number,
-                datetime.now(),
-                datetime.now() + timedelta(days=15),
-                "Issued"
+                issue_date,
+                due_date,
+                "Issued",
+                0
             ))
 
             cursor.execute("""
                 UPDATE books
-                SET status='Issued'
+                SET
+                    status='Issued',
+                    issue_count=issue_count+1
                 WHERE uid=%s
-            """, (uid,))
+            """,(uid,))
 
             conn.commit()
+
             conn.close()
 
             return render_template(
                 "issue_book.html",
-                message="Book issued successfully",
+                message="Book Issued Successfully",
                 redirect="/dashboard"
             )
 
         except Exception as e:
+
             conn.rollback()
             conn.close()
-            return f"Error Issuing Book: {e}"
+
+            return f"Error : {e}"
 
     return render_template("issue_book.html")
 @app.route("/return_book", methods=["GET", "POST"])
