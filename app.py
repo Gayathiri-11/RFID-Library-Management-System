@@ -187,34 +187,43 @@ def export_transactions():
 def books():
 
     search = request.args.get("search", "")
+    category = request.args.get("category", "")
+    status = request.args.get("status", "")
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
+    query = """
+        SELECT *
+        FROM books
+        WHERE 1=1
+    """
+
+    params = []
+
     if search:
+        query += """
+        AND (
+            uid LIKE %s
+            OR book_number LIKE %s
+            OR book_name LIKE %s
+            OR author LIKE %s
+        )
+        """
+        keyword = "%" + search + "%"
+        params.extend([keyword, keyword, keyword, keyword])
 
-        cursor.execute("""
-            SELECT *
-            FROM books
-            WHERE uid LIKE %s
-               OR book_number LIKE %s
-               OR book_name LIKE %s
-               OR author LIKE %s
-            ORDER BY book_name
-        """, (
-            "%" + search + "%",
-            "%" + search + "%",
-            "%" + search + "%",
-            "%" + search + "%"
-        ))
+    if category:
+        query += " AND category=%s"
+        params.append(category)
 
-    else:
+    if status:
+        query += " AND status=%s"
+        params.append(status)
 
-        cursor.execute("""
-            SELECT *
-            FROM books
-            ORDER BY book_name
-        """)
+    query += " ORDER BY book_name"
+
+    cursor.execute(query, tuple(params))
 
     books = cursor.fetchall()
 
@@ -223,7 +232,9 @@ def books():
     return render_template(
         "books.html",
         books=books,
-        search=search
+        search=search,
+        category=category,
+        status=status
     )
 @app.route("/edit_book/<uid>", methods=["GET", "POST"])
 def edit_book(uid):

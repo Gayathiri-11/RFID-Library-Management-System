@@ -1,102 +1,190 @@
- <!DOCTYPE html>
-
+<!DOCTYPE html>
 <html>
+
 <head>
-    <title>Books Management</title>
+
+<title>Books Management</title>
 
 <style>
 
-    body{
-        font-family: Arial, sans-serif;
-        background:#f4f6f9;
-        margin:0;
-        padding:0;
-    }
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f6f9;
+}
 
-    .container{
+.container{
     margin-left:240px;
     padding:20px;
-    }
+}
 
-    h1{
-        text-align:center;
-        color:#003366;
-    }
+h1{
+    color:#003366;
+    text-align:center;
+    margin-bottom:20px;
+}
 
-    .search-box{
-        margin-bottom:20px;
-        text-align:center;
-    }
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
 
-    .search-box input{
-        width:350px;
-        padding:10px;
-        border:1px solid #ccc;
-        border-radius:5px;
-    }
+.book-count{
+    font-size:18px;
+    font-weight:bold;
+    color:#003366;
+}
 
-    .search-box button{
-        padding:10px 15px;
-        background:#0066cc;
-        color:white;
-        border:none;
-        border-radius:5px;
-        cursor:pointer;
-    }
+.filter-form{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
 
-    table{
-        width:100%;
-        border-collapse:collapse;
-        background:white;
-        box-shadow:0px 0px 10px lightgray;
-    }
+.filter-form input,
+.filter-form select{
 
-    th{
-        background:#003366;
-        color:white;
-        padding:12px;
-    }
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
 
-    td{
-        padding:10px;
-        text-align:center;
-        border:1px solid #ddd;
-    }
+.filter-form button{
 
-    tr:nth-child(even){
-        background:#f2f2f2;
-    }
+    background:#003366;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:6px;
+    cursor:pointer;
+}
 
-    .available{
-        color:green;
-        font-weight:bold;
-    }
+.filter-form button:hover{
 
-    .issued{
-        color:red;
-        font-weight:bold;
-    }
+    background:#0055aa;
+}
 
-    .edit-btn{
-        background:#007bff;
-        color:white;
-        border:none;
-        padding:6px 12px;
-        border-radius:4px;
-        cursor:pointer;
-    }
+table{
 
-    .deactivate-btn{
-        background:#dc3545;
-        color:white;
-        border:none;
-        padding:6px 12px;
-        border-radius:4px;
-        cursor:pointer;
-    }
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+
+th{
+
+    background:#003366;
+    color:white;
+    padding:14px;
+}
+
+td{
+
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #eee;
+}
+
+tr:nth-child(even){
+
+    background:#fafafa;
+}
+
+tr:hover{
+
+    background:#eef5ff;
+}
+
+.available{
+
+    color:green;
+    font-weight:bold;
+}
+
+.issued{
+
+    color:red;
+    font-weight:bold;
+}
+
+.inactive{
+
+    color:gray;
+    font-weight:bold;
+}
+
+.edit-btn,
+.replace-btn,
+.deactivate-btn{
+
+    border:none;
+    padding:7px 12px;
+    border-radius:5px;
+    cursor:pointer;
+    color:white;
+    margin:2px;
+}
+
+.edit-btn{
+
+    background:#007bff;
+}
+
+.replace-btn{
+
+    background:#28a745;
+}
+
+.deactivate-btn{
+
+    background:#dc3545;
+}
+
+.edit-btn:hover{
+
+    background:#0062cc;
+}
+
+.replace-btn:hover{
+
+    background:#218838;
+}
+
+.deactivate-btn:hover{
+
+    background:#c82333;
+}
+
+@media(max-width:900px){
+
+.top-bar{
+
+flex-direction:column;
+align-items:flex-start;
+
+}
+
+.filter-form{
+
+margin-top:15px;
+
+}
+
+table{
+
+font-size:14px;
+
+}
+
+}
 
 </style>
-
 
 </head>
 
@@ -106,110 +194,161 @@
 
 <div class="container">
 
-
 <h1>Books Management</h1>
 
-<div class="search-box">
+<div class="top-bar">
 
-    <form method="GET">
+<div class="book-count">
 
-        <input
-            type="text"
-            name="search"
-            placeholder="Search UID, Book Number, Book Name, Author"
-            value="{{ search }}"
-        >
+Total Books : {{ books|length }}
 
-        <button type="submit">
-            Search
-        </button>
+</div>
 
-    </form>
+<form method="GET" class="filter-form">
+
+<input
+type="text"
+name="search"
+placeholder="Search Book Number, Name, Author..."
+value="{{ search }}">
+
+<select name="category">
+    <option value="">All Categories</option>
+
+    <option value="Text Book" {% if category=="Text Book" %}selected{% endif %}>Text Book</option>
+
+    <option value="Reference" {% if category=="Reference" %}selected{% endif %}>Reference</option>
+
+    <option value="Magazine" {% if category=="Magazine" %}selected{% endif %}>Magazine</option>
+
+    <option value="Project" {% if category=="Project" %}selected{% endif %}>Project</option>
+</select>
+
+<select name="status">
+
+<option value="">All Status</option>
+
+<option value="Available">Available</option>
+
+<option value="Issued">Issued</option>
+
+<option value="Inactive">Inactive</option>
+
+</select>
+
+<button type="submit">
+
+Search
+
+</button>
+
+</form>
 
 </div>
 
 <table>
-  
-    <tr>
-        <th>UID</th>
-        <th>Book Number</th>
-        <th>Book Name</th>
-        <th>Author</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
 
-    {% for book in books %}
+<tr>
 
-    <tr>
+<th>UID</th>
 
-        <td>{{ book.uid }}</td>
+<th>Book No</th>
 
-        <td>{{ book.book_number }}</td>
+<th>Book Name</th>
 
-        <td>{{ book.book_name }}</td>
+<th>Author</th>
 
-        <td>{{ book.author }}</td>
+<th>Status</th>
 
-        <td>
+<th>Actions</th>
 
-            {% if book.status == 'Available' %}
-                <span class="available">Available</span>
+</tr>
 
-            {% elif book.status == 'Issued' %}
-                <span class="issued">Issued</span>
+{% for book in books %}
 
-            {% else %}
-                <span style="color:gray;font-weight:bold;">
-                    Inactive
-                </span>
+<tr>
 
-            {% endif %}
+<td>{{ book.uid }}</td>
 
-        </td>
+<td>{{ book.book_number }}</td>
 
-        <td>
+<td>{{ book.book_name }}</td>
 
-            {% if book.status == 'Available' %}
+<td>{{ book.author }}</td>
 
-                <a href="/edit_book/{{ book.uid }}">
-                    <button type="button" class="edit-btn">
-                        Edit
-                    </button>
-                </a>
+<td>
 
-                <a href="/deactivate_book/{{ book.uid }}">
-                    <button
-                        type="button"
-                        class="deactivate-btn"
-                        onclick="return confirm('Deactivate this book?')">
-                        Deactivate
-                    </button>
-                </a>
-<a href="/replace_uid/{{ book.uid }}">
-    <button type="button">
-        Replace RFID
-    </button>
+{% if book.status=="Available" %}
+
+<span class="available">Available</span>
+
+{% elif book.status=="Issued" %}
+
+<span class="issued">Issued</span>
+
+{% else %}
+
+<span class="inactive">Inactive</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if book.status=="Available" %}
+
+<a href="/edit_book/{{ book.uid }}">
+
+<button class="edit-btn">
+
+Edit
+
+</button>
+
 </a>
 
-            {% else %}
+<a href="/replace_uid/{{ book.uid }}">
 
-                <span style="color:red;font-weight:bold;">
-                    Locked
-                </span>
+<button class="replace-btn">
 
-            {% endif %}
+Replace RFID
 
-        </td>
+</button>
 
-    </tr>
+</a>
 
-    {% endfor %}
+<a href="/deactivate_book/{{ book.uid }}"
+onclick="return confirm('Are you sure you want to deactivate this book?');">
+
+<button class="deactivate-btn">
+
+Deactivate
+
+</button>
+
+</a>
+
+{% else %}
+
+<span style="color:red;font-weight:bold;">
+
+Locked
+
+</span>
+
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
 
 </table>
-
 
 </div>
 
 </body>
+
 </html>
