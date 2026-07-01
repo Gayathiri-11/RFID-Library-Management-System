@@ -742,14 +742,32 @@ def transactions():
 
     for t in transactions:
 
+        # Default values
         t["is_overdue"] = False
+        t["fine"] = 0
 
-        if (
-            t["status"] == "Issued"
-            and t["due_date"]
-            and today > t["due_date"]
-        ):
-            t["is_overdue"] = True
+        if t["due_date"]:
+
+            # Convert datetime to date if required
+            if hasattr(t["due_date"], "date"):
+                due_date = t["due_date"].date()
+            else:
+                due_date = t["due_date"]
+
+            # Calculate fine only for issued books
+            if t["status"] == "Issued":
+
+                overdue_days = (today - due_date).days
+
+                if overdue_days > 0:
+                    t["is_overdue"] = True
+                    t["fine"] = overdue_days * 5
+
+            # Returned books
+            elif t["status"] == "Returned":
+
+                # Show stored fine from database
+                t["fine"] = t["fine"] if t["fine"] else 0
 
     conn.close()
 
