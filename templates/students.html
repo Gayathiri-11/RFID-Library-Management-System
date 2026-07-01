@@ -1,136 +1,244 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Students</title>
 
-    <style>
+<title>Students Management</title>
 
-        body{
-            font-family: Arial, sans-serif;
-            background:#f4f6f9;
-            margin:0;
-            padding:0;
-        }
+<style>
 
-        .container{
-          margin-left:240px;
-         padding:20px;
-        }
-        h1{
-            text-align:center;
-            color:#003366;
-        }
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f6f9;
+}
 
-        .search-box{
-            margin-bottom:20px;
-            text-align:center;
-        }
+.container{
+    margin-left:240px;
+    padding:20px;
+}
 
-        .search-box input{
-            padding:10px;
-            width:300px;
-        }
+h1{
+    text-align:center;
+    color:#003366;
+}
 
-        .search-box button{
-            padding:10px 15px;
-            background:#003366;
-            color:white;
-            border:none;
-            cursor:pointer;
-        }
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-            background:white;
-        }
+.count{
+    font-size:18px;
+    font-weight:bold;
+    color:#003366;
+}
 
-        th{
-            background:#003366;
-            color:white;
-            padding:12px;
-        }
+form{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
 
-        td{
-            padding:10px;
-            border-bottom:1px solid #ddd;
-            text-align:center;
-        }
+input,select{
 
-        tr:hover{
-            background:#f2f2f2;
-        }
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
 
-        .no-data{
-            text-align:center;
-            padding:20px;
-            color:red;
-        }
+button{
 
-    </style>
+    background:#003366;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+
+    background:#0055aa;
+}
+
+table{
+
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+
+th{
+
+    background:#003366;
+    color:white;
+    padding:12px;
+}
+
+td{
+
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #ddd;
+}
+
+tr:nth-child(even){
+
+    background:#fafafa;
+}
+
+tr:hover{
+
+    background:#eef5ff;
+}
+
+.edit{
+
+    background:#007bff;
+    color:white;
+    padding:7px 12px;
+    border-radius:5px;
+    text-decoration:none;
+}
+
+.edit:hover{
+
+    background:#0056b3;
+}
+
+.no-data{
+
+    margin-top:20px;
+    color:red;
+    text-align:center;
+    font-weight:bold;
+}
+
+</style>
 
 </head>
+
 <body>
 
 {% include 'sidebar.html' %}
 
 <div class="container">
 
-    <h1>Students</h1>
+<h1>Students Management</h1>
 
-    <div class="search-box">
+<div class="top-bar">
 
-        <form method="GET" action="/students">
+<div class="count">
 
-            <input
-                type="text"
-                name="search"
-                placeholder="Search by Roll Number or Name"
-                value="{{ search }}"
-            >
+Total Students : {{ students|length }}
 
-            <button type="submit">
-                Search
-            </button>
+</div>
 
-        </form>
+<form method="GET" action="/students">
 
-    </div>
+<input
+type="text"
+name="search"
+placeholder="Search Roll No / Name"
+value="{{ search }}">
 
-    <table>
+<select name="department">
 
-        <tr>
-            <th>Roll Number</th>
-            <th>Student Name</th>
-            <th>Department</th>
-            <th>Year</th>
-        </tr>
+<option value="">All Departments</option>
 
-        {% for student in students %}
+<option value="CSE" {% if department=="CSE" %}selected{% endif %}>CSE</option>
+
+<option value="ECE" {% if department=="ECE" %}selected{% endif %}>ECE</option>
+
+<option value="EEE" {% if department=="EEE" %}selected{% endif %}>EEE</option>
+
+</select>
+
+<select name="year">
+
+<option value="">All Years</option>
+
+<option value="I" {% if year=="I" %}selected{% endif %}>I</option>
+
+<option value="II" {% if year=="II" %}selected{% endif %}>II</option>
+
+<option value="III" {% if year=="III" %}selected{% endif %}>III</option>
+
+<option value="IV" {% if year=="IV" %}selected{% endif %}>IV</option>
+
+</select>
+
+<button type="submit">
+
+Search
+
+</button>
+
+</form>
+
+</div>
+
+<table>
 
 <tr>
-    <td>{{ student.roll_number }}</td>
-    <td>{{ student.student_name }}</td>
-    <td>{{ student.department }}</td>
-    <td>{{ student.year }}</td>
 
-    <td>
-        <a href="/edit_student/{{ student.roll_number }}">
-            Edit
-        </a>
-    </td>
+<th>Roll Number</th>
+
+<th>Student Name</th>
+
+<th>Department</th>
+
+<th>Year</th>
+
+<th>Action</th>
+
+</tr>
+
+{% for student in students %}
+
+<tr>
+
+<td>{{ student.roll_number }}</td>
+
+<td>{{ student.student_name }}</td>
+
+<td>{{ student.department }}</td>
+
+<td>{{ student.year }}</td>
+
+<td>
+
+<a href="/edit_student/{{ student.roll_number }}" class="edit">
+
+Edit
+
+</a>
+
+</td>
+
 </tr>
 
 {% endfor %}
-    </table>
 
-    {% if students|length == 0 %}
-        <div class="no-data">
-            No Active Students Found
-        </div>
-    {% endif %}
+</table>
+
+{% if students|length==0 %}
+
+<div class="no-data">
+
+No Active Students Found
+
+</div>
+
+{% endif %}
 
 </div>
 
 </body>
+
 </html>

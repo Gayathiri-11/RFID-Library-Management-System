@@ -1,84 +1,107 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Transactions</title>
 
-    <style>
+<title>Transactions</title>
 
-        body{
-            font-family: Arial, sans-serif;
-            background:#f4f6f9;
-            margin:0;
-            padding:0;
-        }
+<style>
 
-        .container{
-         margin-left:240px;
-          padding:20px;
-       }
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f6f9;
+}
 
-        h1{
-            text-align:center;
-            color:#003366;
-        }
+.container{
+    margin-left:240px;
+    padding:20px;
+}
 
-        .download-btn{
-            text-align:center;
-            margin-bottom:20px;
-        }
+h1{
+    text-align:center;
+    color:#003366;
+}
 
-        .download-btn button{
-            background:#28a745;
-            color:white;
-            border:none;
-            padding:12px 20px;
-            border-radius:5px;
-            cursor:pointer;
-            font-size:15px;
-        }
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
 
-        .download-btn button:hover{
-            background:#218838;
-        }
-        .overdue {
-            background-color: #ffcccc !important;
-            color: #b30000;
-            font-weight: bold;
-        }
-        table{
-            width:100%;
-            border-collapse:collapse;
-            background:white;
-            box-shadow:0px 0px 10px lightgray;
-        }
+.count{
+    font-size:18px;
+    font-weight:bold;
+    color:#003366;
+}
 
-        th{
-            background:#003366;
-            color:white;
-            padding:12px;
-        }
+.download-btn button{
 
-        td{
-            padding:10px;
-            text-align:center;
-            border:1px solid #ddd;
-        }
+    background:#28a745;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:5px;
+    cursor:pointer;
+}
 
-        tr:nth-child(even){
-            background:#f2f2f2;
-        }
+.download-btn button:hover{
 
-        .issued{
-            color:red;
-            font-weight:bold;
-        }
+    background:#218838;
+}
 
-        .returned{
-            color:green;
-            font-weight:bold;
-        }
+table{
 
-    </style>
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+
+th{
+
+    background:#003366;
+    color:white;
+    padding:12px;
+}
+
+td{
+
+    padding:10px;
+    text-align:center;
+    border-bottom:1px solid #ddd;
+}
+
+tr:nth-child(even){
+
+    background:#fafafa;
+}
+
+tr:hover{
+
+    background:#eef5ff;
+}
+
+.overdue{
+
+    background:#ffe5e5 !important;
+}
+
+.issued{
+
+    color:red;
+    font-weight:bold;
+}
+
+.returned{
+
+    color:green;
+    font-weight:bold;
+}
+
+</style>
 
 </head>
 
@@ -88,61 +111,118 @@
 
 <div class="container">
 
-    <h1>Book Transactions</h1>
+<h1>Book Transactions</h1>
 
-    <div class="download-btn">
-        <a href="/export_transactions">
-            <button>Download Excel Report</button>
-        </a>
-    </div>
+<div class="top-bar">
 
-    <table>
+<div class="count">
 
-        <tr>
-            <th>UID</th>
-            <th>Roll Number</th>
-            <th>Issue Date</th>
-            <th>Return Date</th>
-            <th>Status</th>
-            <th>Fine</th>
-        </tr>
+Total Transactions : {{ transactions|length }}
 
-        {% for t in transactions %}
-       <tr class="{% if t.is_overdue %}overdue{% endif %}">
+</div>
 
-         <tr>
+<div class="download-btn">
 
-            <td>{{ t.uid }}</td>
+<a href="/export_transactions">
 
-            <td>{{ t.roll_number }}</td>
+<button>
 
-            <td>{{ t.issue_date }}</td>
+Download Excel Report
 
-            <td>
-                {% if t.return_date %}
-                    {{ t.return_date }}
-                {% else %}
-                    -
-                {% endif %}
-            </td>
+</button>
 
-            <td>
-                {% if t.status == 'Issued' %}
-                    <span class="issued">Issued</span>
-                {% else %}
-                    <span class="returned">Returned</span>
-                {% endif %}
-            </td>
+</a>
 
-            <td>₹{{ t.fine }}</td>
+</div>
 
-        </tr>
+</div>
 
-        {% endfor %}
+<table>
 
-    </table>
+<tr>
+
+<th>Book Name</th>
+
+<th>Student Name</th>
+
+<th>Department</th>
+
+<th>Issue Date</th>
+
+<th>Due Date</th>
+
+<th>Return Date</th>
+
+<th>Status</th>
+
+<th>Fine</th>
+
+</tr>
+
+{% for t in transactions %}
+
+<tr class="{% if t.is_overdue %}overdue{% endif %}">
+
+<td>{{ t.book_name }}</td>
+
+<td>{{ t.student_name }}</td>
+
+<td>{{ t.department }}</td>
+
+<td>{{ t.issue_date }}</td>
+
+<td>{{ t.due_date }}</td>
+
+<td>
+
+{% if t.return_date %}
+
+{{ t.return_date }}
+
+{% else %}
+
+-
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if t.status=="Issued" %}
+
+<span class="issued">
+
+Issued
+
+</span>
+
+{% else %}
+
+<span class="returned">
+
+Returned
+
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+₹{{ t.fine }}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
 
 </div>
 
 </body>
+
 </html>

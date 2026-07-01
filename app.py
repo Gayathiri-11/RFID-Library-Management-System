@@ -471,27 +471,53 @@ def add_student():
 def students():
 
     search = request.args.get("search", "")
+    department = request.args.get("department", "")
+    year = request.args.get("year", "")
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-    SELECT *
-    FROM students
-    WHERE status='Active'
-    AND (
-        roll_number LIKE %s
-        OR student_name LIKE %s
-    )
-""", (
-    "%" + search + "%",
-    "%" + search + "%"
-))
+    query = """
+        SELECT *
+        FROM students
+        WHERE status='Active'
+    """
+
+    params = []
+
+    if search:
+        query += """
+        AND (
+            roll_number LIKE %s
+            OR student_name LIKE %s
+        )
+        """
+        keyword = "%" + search + "%"
+        params.extend([keyword, keyword])
+
+    if department:
+        query += " AND department=%s"
+        params.append(department)
+
+    if year:
+        query += " AND year=%s"
+        params.append(year)
+
+    query += " ORDER BY student_name"
+
+    cursor.execute(query, tuple(params))
 
     students = cursor.fetchall()
+
     conn.close()
 
-    return render_template("students.html", students=students, search=search)
+    return render_template(
+        "students.html",
+        students=students,
+        search=search,
+        department=department,
+        year=year
+    )
 @app.route("/issue_book", methods=["GET", "POST"])
 def issue_book():
 
@@ -697,27 +723,40 @@ def transactions():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT *
-        FROM transactions
-        ORDER BY issue_date DESC
+        SELECT
+            t.*,
+            b.book_name,
+            s.student_name,
+            s.department
+        FROM transactions t
+        JOIN books b
+            ON t.uid = b.uid
+        JOIN students s
+            ON t.roll_number = s.roll_number
+        ORDER BY t.issue_date DESC
     """)
 
     transactions = cursor.fetchall()
 
     today = datetime.now().date()
 
-    # add overdue flag
     for t in transactions:
+
         t["is_overdue"] = False
 
-        if t["status"] == "Issued" and t["due_date"] is not None:
-            if today > t["due_date"]:
-                t["is_overdue"] = True
+        if (
+            t["status"] == "Issued"
+            and t["due_date"]
+            and today > t["due_date"]
+        ):
+            t["is_overdue"] = True
 
     conn.close()
 
-    return render_template("transactions.html", transactions=transactions)
-
+    return render_template(
+        "transactions.html",
+        transactions=transactions
+    )
 @app.route("/bulk_student_management")
 def bulk_student_management():
     return render_template("bulk_student_management.html")
