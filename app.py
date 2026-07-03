@@ -930,6 +930,32 @@ def bulk_import_students():
     finally:
 
         conn.close()
+@app.route("/book_statistics")
+def book_statistics():
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            book_number,
+            book_name,
+            author,
+            category,
+            subject,
+            issue_count
+        FROM books
+        ORDER BY issue_count DESC
+    """)
+
+    books = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "book_statistics.html",
+        books=books
+    )
 @app.route("/bulk_deactivate_students", methods=["POST"])
 def bulk_deactivate_students():
 

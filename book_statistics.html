@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Book Statistics</title>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6f9;
+    margin:0;
+}
+
+.container{
+    margin-left:240px;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    color:#003366;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    box-shadow:0 0 10px lightgray;
+}
+
+th{
+    background:#003366;
+    color:white;
+    padding:12px;
+}
+
+td{
+    padding:10px;
+    border:1px solid #ddd;
+    text-align:center;
+}
+
+tr:nth-child(even){
+    background:#f7f7f7;
+}
+
+.popular{
+    color:green;
+    font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+{% include 'sidebar.html' %}
+
+<div class="container">
+
+<h1>Book Statistics</h1>
+
+<table>
+
+<tr>
+<th>Book Number</th>
+<th>Book Name</th>
+<th>Author</th>
+<th>Category</th>
+<th>Subject</th>
+<th>Times Issued</th>
+</tr>
+
+{% for b in books %}
+
+<tr>
+
+<td>{{ b.book_number }}</td>
+<td>{{ b.book_name }}</td>
+<td>{{ b.author }}</td>
+<td>{{ b.category }}</td>
+<td>{{ b.subject }}</td>
+
+<td class="popular">
+{{ b.issue_count }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+</body>
+</html>
