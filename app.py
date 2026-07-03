@@ -390,45 +390,82 @@ def add_book():
 
     if request.method == "POST":
 
-        uid = request.form["uid"]
-        book_number = request.form["book_number"]
-        book_name = request.form["book_name"]
-        author = request.form["author"]
+        uid = request.form["uid"].strip()
+        book_number = request.form["book_number"].strip()
+        book_name = request.form["book_name"].strip()
+        author = request.form["author"].strip()
+        category = request.form["category"]
+        subject = request.form["subject"]
 
         conn = get_connection()
         cursor = conn.cursor()
 
         try:
-            # CHECK DUPLICATE
-            cursor.execute("SELECT * FROM books WHERE uid=%s", (uid,))
-            existing = cursor.fetchone()
 
-            if existing:
+            # Check duplicate UID
+            cursor.execute(
+                "SELECT uid FROM books WHERE uid=%s",
+                (uid,)
+            )
+
+            if cursor.fetchone():
                 conn.close()
-                return "❌ Book already exists with this UID"
+                return "Book already exists with this RFID UID."
 
-            # INSERT BOOK
+            # Check duplicate Book Number
+            cursor.execute(
+                "SELECT book_number FROM books WHERE book_number=%s",
+                (book_number,)
+            )
+
+            if cursor.fetchone():
+                conn.close()
+                return "Book Number already exists."
+
+            # Insert Book
             cursor.execute("""
                 INSERT INTO books
-                (uid, book_number, book_name, author, status)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (
+                (
+                    uid,
+                    book_number,
+                    book_name,
+                    author,
+                    category,
+                    subject,
+                    status,
+                    active,
+                    issue_count
+                )
+                VALUES
+                (
+                    %s,%s,%s,%s,%s,%s,%s,%s,%s
+                )
+            """,(
                 uid,
                 book_number,
                 book_name,
                 author,
-                "Available"
+                category,
+                subject,
+                "Available",
+                1,
+                0
             ))
 
             conn.commit()
             conn.close()
 
-            return render_template("add_book.html", success=True)
+            return render_template(
+                "add_book.html",
+                success=True
+            )
 
         except Exception as e:
+
             conn.rollback()
             conn.close()
-            return f"Error Adding Book: {e}"
+
+            return f"Error Adding Book : {e}"
 
     return render_template("add_book.html")
 @app.route("/add_student", methods=["GET", "POST"])
@@ -613,76 +650,95 @@ def return_book():
 
     if request.method == "POST":
 
-        uid = request.form["uid"]
+        uid = request.form["uid"].strip()
 
         conn = get_connection()
-        cursor = conn.cursor(dictionary=True, buffered=True)
+        cursor = conn.cursor(dictionary=True)
 
         try:
-            # Find latest issued transaction
+
+            # Get latest issued transaction
             cursor.execute("""
-                SELECT *
-                FROM transactions
-                WHERE uid=%s AND status='Issued'
-                ORDER BY issue_date DESC
+                SELECT
+                    t.*,
+                    b.book_name,
+                    s.student_name
+                FROM transactions t
+                JOIN books b
+                    ON t.uid = b.uid
+                JOIN students s
+                    ON t.roll_number = s.roll_number
+                WHERE t.uid=%s
+                AND t.status='Issued'
+                ORDER BY t.issue_date DESC
                 LIMIT 1
             """, (uid,))
 
             transaction = cursor.fetchone()
 
             if not transaction:
+
                 conn.close()
+
                 return render_template(
                     "return_book.html",
                     message="Book not found or already returned",
                     redirect="/return_book"
                 )
 
-            due_date = transaction["due_date"]
             today = datetime.now().date()
+            due_date = transaction["due_date"]
 
+            # Calculate Fine (₹5/day)
             fine = 0
 
-            if due_date and today > due_date:
-                fine = (today - due_date).days * 2
+            if due_date:
 
-            # Update transaction
+                if hasattr(due_date, "date"):
+                    due_date = due_date.date()
+
+                overdue_days = (today - due_date).days
+
+                if overdue_days > 0:
+                    fine = overdue_days * 5
+
+            # Update Transaction
             cursor.execute("""
                 UPDATE transactions
-                SET status='Returned',
+                SET
+                    status='Returned',
                     return_date=%s,
                     fine=%s
                 WHERE id=%s
-            """, (
+            """,(
                 datetime.now(),
                 fine,
                 transaction["id"]
             ))
 
-            # Update book status
+            # Update Book Status
             cursor.execute("""
                 UPDATE books
                 SET status='Available'
                 WHERE uid=%s
-            """, (uid,))
+            """,(uid,))
 
             conn.commit()
+
             conn.close()
 
             return render_template(
                 "return_book.html",
-                message=f"Book Returned Successfully. Fine = ₹{fine}",
+                message=f"Book Returned Successfully. Fine Collected : ₹{fine}",
                 redirect="/dashboard"
             )
 
         except Exception as e:
+
             conn.rollback()
             conn.close()
 
-            import traceback
-            print(traceback.format_exc())
-
-            return f"Error Returning Book: {e}"
+            return f"Error : {e}"
 
     return render_template("return_book.html")
 @app.route("/check_book/<uid>")

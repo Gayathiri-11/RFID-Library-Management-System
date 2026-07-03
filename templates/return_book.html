@@ -1,73 +1,115 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Return Book</title>
+<title>Return Book</title>
 
-    <style>
-        body{
-            font-family: Arial;
-            background:#f4f6f9;
-            text-align:center;
-        }
+<style>
 
-        .container{
-            width:400px;
-            margin:50px auto;
-            background:white;
-            padding:25px;
-            border-radius:10px;
-            box-shadow:0px 0px 10px gray;
-        }
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:0;
+}
 
-        input{
-            width:90%;
-            padding:10px;
-            margin:10px;
-        }
+.container{
+    width:450px;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px lightgray;
+}
 
-        button{
-            padding:10px 20px;
-            background:#dc3545;
-            color:white;
-            border:none;
-            border-radius:5px;
-            cursor:pointer;
-        }
+h1{
+    text-align:center;
+    color:#003366;
+}
 
-        button:hover{
-            background:#b52a37;
-        }
+label{
+    font-weight:bold;
+}
 
-        #toast{
-            visibility:hidden;
-            min-width:250px;
-            background-color:#28a745;
-            color:white;
-            text-align:center;
-            border-radius:8px;
-            padding:16px;
-            position:fixed;
-            z-index:1000;
-            left:50%;
-            bottom:30px;
-            transform:translateX(-50%);
-        }
+input{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:15px;
+    border:1px solid #ccc;
+    border-radius:5px;
+    box-sizing:border-box;
+}
 
-        #toast.show{
-            visibility:visible;
-            animation:fadein 0.5s, fadeout 0.5s 2s;
-        }
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:15px;
+    margin-top:10px;
+}
 
-        @keyframes fadein{
-            from {bottom:0; opacity:0;}
-            to {bottom:30px; opacity:1;}
-        }
+.scan-btn{
+    background:#28a745;
+    color:white;
+}
 
-        @keyframes fadeout{
-            from {bottom:30px; opacity:1;}
-            to {bottom:0; opacity:0;}
-        }
-    </style>
+.return-btn{
+    background:#dc3545;
+    color:white;
+}
+
+.scan-btn:hover{
+    background:#218838;
+}
+
+.return-btn:hover{
+    background:#c82333;
+}
+
+.info{
+    background:#eef5ff;
+    padding:15px;
+    border-radius:8px;
+    margin-top:20px;
+}
+
+.info p{
+    margin:8px 0;
+}
+
+#toast{
+    visibility:hidden;
+    min-width:250px;
+    background:#28a745;
+    color:white;
+    text-align:center;
+    border-radius:8px;
+    padding:16px;
+    position:fixed;
+    left:50%;
+    bottom:30px;
+    transform:translateX(-50%);
+}
+
+#toast.show{
+    visibility:visible;
+    animation:fadein .5s,fadeout .5s 2s;
+}
+
+@keyframes fadein{
+from{bottom:0;opacity:0;}
+to{bottom:30px;opacity:1;}
+}
+
+@keyframes fadeout{
+from{bottom:30px;opacity:1;}
+to{bottom:0;opacity:0;}
+}
+
+</style>
+
 </head>
 
 <body>
@@ -76,94 +118,112 @@
 
 <div class="container">
 
-    <h1>Return Book</h1>
+<h1>Return Book</h1>
 
-    <form method="POST">
+<form method="POST">
 
-        <p><b>Book UID</b></p>
+<label>RFID UID</label>
 
-        <input
-            type="text"
-            id="uid"
-            name="uid"
-            placeholder="Scan RFID Tag"
-            required
-        >
+<input
+type="text"
+id="uid"
+name="uid"
+placeholder="Scan RFID"
+required>
 
-        <br>
+<button
+type="button"
+class="scan-btn"
+onclick="scanRFID()">
+Scan RFID
+</button>
 
-        <button
-            type="button"
-            onclick="scanRFID()">
-            Scan RFID
-        </button>
+{% if book %}
 
-        <br><br>
+<div class="info">
 
-        <button type="submit">
-            Return Book
-        </button>
+<p><b>Book :</b> {{ book.book_name }}</p>
 
-    </form>
+<p><b>Student :</b> {{ book.student_name }}</p>
+
+<p><b>Issue Date :</b> {{ book.issue_date }}</p>
+
+<p><b>Due Date :</b> {{ book.due_date }}</p>
+
+<p><b>Fine :</b>
+<span style="color:red;font-weight:bold;">
+₹{{ fine }}
+</span>
+</p>
+
+</div>
+
+{% endif %}
+
+<button
+type="submit"
+class="return-btn">
+Return Book
+</button>
+
+</form>
 
 </div>
 
 <div id="toast"></div>
 
 <script>
-function showToast(message, redirectUrl=null){
-
-    var toast = document.getElementById("toast");
-
-    toast.innerText = message;
-    toast.classList.add("show");
-
-    setTimeout(() => {
-
-        toast.classList.remove("show");
-
-        if(redirectUrl){
-            window.location.href = redirectUrl;
-        }
-
-    }, 2000);
-}
 
 function scanRFID(){
 
-    fetch("/scan_uid")
-    .then(response => response.json())
-    .then(data => {
+fetch("/scan_uid")
+.then(r=>r.json())
+.then(data=>{
 
-        console.log("UID:", data.uid);
-
-        if(data.uid === "RFID_NOT_CONNECTED"){
-            showToast("RFID Reader Not Connected");
-            return;
-        }
-
-        if(data.uid){
-            document.getElementById("uid").value = data.uid;
-            showToast("RFID Scanned Successfully");
-        }
-
-    })
-    .catch(error => {
-        console.error(error);
-        showToast("RFID Scan Failed");
-    });
+if(data.uid=="RFID_NOT_CONNECTED"){
+showToast("RFID Reader Not Connected");
+return;
 }
 
-/* Auto Scan Every Second */
+document.getElementById("uid").value=data.uid;
+
+});
+
+}
+
+function showToast(message,redirect=null){
+
+let toast=document.getElementById("toast");
+
+toast.innerHTML=message;
+
+toast.classList.add("show");
+
+setTimeout(function(){
+
+toast.classList.remove("show");
+
+if(redirect){
+window.location.href=redirect;
+}
+
+},2000);
+
+}
+
 </script>
 
 {% if message %}
+
 <script>
+
 showToast(
-    "{{ message }}",
-    "{{ redirect }}"
+"{{ message }}",
+"{{ redirect }}"
 );
+
 </script>
+
 {% endif %}
 
 </body>
