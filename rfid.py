@@ -14,8 +14,6 @@ else:
     except Exception as e:
         print(e)
         arduino = None
-
-
 def scan_uid():
     if arduino is None:
         return "RFID_NOT_CONNECTED"

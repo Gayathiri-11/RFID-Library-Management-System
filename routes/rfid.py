@@ -12,7 +12,13 @@ from flask import (
     flash,
     jsonify
 )
+
 rfid_bp = Blueprint("rfid", __name__)
+
+@rfid_bp.route("/scan_uid")
+def scan_uid_route():
+    uid = scan_uid()
+    return jsonify({"uid": uid})
 
 
 @rfid_bp.route("/assign_rfid")
@@ -68,12 +74,4 @@ def get_uid():
         print(e)
 
         return ""
-@rfid_bp.route("/scan_uid")
-def scan_uid():
 
-    if arduino is None:
-        return {"uid": "RFID_NOT_CONNECTED"}
-
-    uid = arduino.readline().decode().strip()
-
-    return {"uid": uid}
