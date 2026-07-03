@@ -127,6 +127,9 @@ def edit_book(uid):
         "edit_book.html",
         book=book
     )
+@books_bp.route("/assign_rfid")
+def assign_rfid():
+    return render_template("assign_rfid.html")
 @books_bp.route("/assign_book_uid", methods=["POST"])
 def assign_book_uid():
 
