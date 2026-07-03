@@ -127,6 +127,81 @@ def edit_book(uid):
         "edit_book.html",
         book=book
     )
+@books_bp.route("/assign_book_uid", methods=["POST"])
+def assign_book_uid():
+
+    data = request.get_json()
+
+    uid = data["uid"].strip()
+    book_number = data["book_number"].strip()
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        # Check book exists
+
+        cursor.execute("""
+            SELECT uid
+            FROM books
+            WHERE book_number=%s
+        """, (book_number,))
+
+        book = cursor.fetchone()
+
+        if not book:
+
+            return jsonify({
+                "success": False,
+                "message": "Book Number not found."
+            })
+
+        # Check RFID already used
+
+        cursor.execute("""
+            SELECT book_number
+            FROM books
+            WHERE uid=%s
+        """, (uid,))
+
+        existing = cursor.fetchone()
+
+        if existing:
+
+            return jsonify({
+                "success": False,
+                "message": "RFID already assigned to another book."
+            })
+
+        # Save RFID
+
+        cursor.execute("""
+            UPDATE books
+            SET uid=%s
+            WHERE book_number=%s
+        """, (uid, book_number))
+
+        conn.commit()
+
+        return jsonify({
+            "success": True
+        })
+
+    except Exception as e:
+
+        conn.rollback()
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        })
+
+    finally:
+
+        cursor.close()
+        conn.close()
+
 @books_bp.route("/replace_uid/<old_uid>", methods=["GET", "POST"])
 def replace_uid(old_uid):
 
@@ -145,7 +220,7 @@ def replace_uid(old_uid):
         conn.commit()
         conn.close()
 
-        return redirect(url_for("books"))
+        return redirect(url_for("books.books"))
     return render_template(
         "replace_uid.html",
         old_uid=old_uid
@@ -174,7 +249,7 @@ def deactivate_book(uid):
 
     conn.commit()
     conn.close()
-    return redirect(url_for("books"))
+    return redirect(url_for("books.books"))
 @books_bp.route("/add_book", methods=["GET", "POST"])
 def add_book():
 

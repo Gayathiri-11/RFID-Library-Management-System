@@ -130,24 +130,28 @@
 
 <script>
 function showToast() {
+
     var toast = document.getElementById("toast");
+
+    toast.innerHTML = "Student Added Successfully";
 
     toast.classList.add("show");
 
-    setTimeout(function() {
+    setTimeout(function () {
+
         toast.classList.remove("show");
+
         window.location.href = "/students";
+
     }, 2000);
 }
 </script>
-
 {% if success %}
-
 <script>
-showToast();
+window.onload = function () {
+    showToast();
+};
 </script>
-
 {% endif %}
-
 </body>
 </html>
