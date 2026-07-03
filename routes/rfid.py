@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for
 from database.db import get_connection
 from datetime import datetime, timedelta
+from flask import Blueprint, render_template, jsonify
+from database.db import get_connection
+from rfid import scan_uid
 from flask import (
     Blueprint,
     render_template,
@@ -10,10 +12,9 @@ from flask import (
     flash,
     jsonify
 )
-
-import pandas as pd
-
 rfid_bp = Blueprint("rfid", __name__)
+
+
 @rfid_bp.route("/assign_rfid")
 def assign_rfid():
 

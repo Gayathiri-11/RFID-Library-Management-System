@@ -1,22 +1,9 @@
 from flask import Flask
 import os
-import serial
-import time
 
 app = Flask(__name__)
 app.secret_key = "library_rfid_secret_key"
 
-# Arduino Connection
-if os.environ.get("RENDER"):
-    arduino = None
-else:
-    try:
-        arduino = serial.Serial("COM5", 9600, timeout=1)
-        time.sleep(2)
-        print("Arduino Connected")
-    except Exception as e:
-        print(e)
-        arduino = None
 
 from routes.books import books_bp
 from routes.students import students_bp
