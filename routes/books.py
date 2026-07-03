@@ -340,7 +340,7 @@ def add_book():
 def check_book_status(uid):
 
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     cursor.execute("SELECT status FROM books WHERE uid=%s", (uid,))
     book = cursor.fetchone()
