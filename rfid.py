@@ -14,7 +14,10 @@ else:
     except Exception as e:
         print(e)
         arduino = None
+
+
 def scan_uid():
+
     if arduino is None:
         return "RFID_NOT_CONNECTED"
 
@@ -22,6 +25,8 @@ def scan_uid():
 
     while True:
         if arduino.in_waiting:
+
             uid = arduino.readline().decode().strip()
+
             if uid:
                 return uid

@@ -1,30 +1,49 @@
-from database.db import get_connection
-from datetime import datetime, timedelta
 from flask import Blueprint, render_template, jsonify
 from database.db import get_connection
 from rfid import scan_uid
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    jsonify
-)
 
 rfid_bp = Blueprint("rfid", __name__)
 
+
+# -----------------------------
+# Scan RFID
+# -----------------------------
 @rfid_bp.route("/scan_uid")
 def scan_uid_route():
+
     uid = scan_uid()
-    return jsonify({"uid": uid})
+
+    return jsonify({
+        "uid": uid
+    })
 
 
+# -----------------------------
+# Get UID (Used for Auto Scan)
+# -----------------------------
+@rfid_bp.route("/get_uid")
+def get_uid():
+
+    uid = scan_uid()
+
+    if uid == "RFID_NOT_CONNECTED":
+        return ""
+
+    return uid
+
+
+# -----------------------------
+# Assign RFID Page
+# -----------------------------
 @rfid_bp.route("/assign_rfid")
 def assign_rfid():
 
     return render_template("assign_rfid.html")
+
+
+# -----------------------------
+# Get Book Details
+# -----------------------------
 @rfid_bp.route("/get_book_details/<book_number>")
 def get_book_details(book_number):
 
@@ -51,27 +70,3 @@ def get_book_details(book_number):
         return jsonify(book)
 
     return jsonify({})
-@rfid_bp.route("/get_uid")
-def get_uid():
-
-    try:
-
-        if arduino is None:
-            return ""
-
-        if arduino.in_waiting > 0:
-
-            uid = arduino.readline().decode("utf-8").strip()
-
-            print(uid)
-
-            return uid
-
-        return ""
-
-    except Exception as e:
-
-        print(e)
-
-        return ""
-
