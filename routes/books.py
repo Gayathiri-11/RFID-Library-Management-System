@@ -302,7 +302,7 @@ def add_book():
                 )
                 VALUES
                 (
-                    %s,%s,%s,%s,%s,%s,%s,%s,%s
+                    %s,%s,%s,%s,%s,%s,%s,
                 )
             """,(
                 uid,
