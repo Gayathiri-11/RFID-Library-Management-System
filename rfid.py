@@ -23,18 +23,10 @@ def scan_uid():
 
     arduino.reset_input_buffer()
 
-    start = time.time()
-
-    while time.time() - start < 5:   # Wait only 5 seconds
-
-        if arduino.in_waiting > 0:
+    while True:
+        if arduino.in_waiting:
 
             uid = arduino.readline().decode().strip()
 
             if uid:
-                print("Scanned UID:", uid)
                 return uid
-
-        time.sleep(0.1)
-
-    return ""

@@ -12,7 +12,8 @@ rfid_bp = Blueprint("rfid", __name__)
 def scan_uid_route():
 
     uid = scan_uid()
-
+    print("returning: ",uid)
+    
     return jsonify({
         "uid": uid
     })
