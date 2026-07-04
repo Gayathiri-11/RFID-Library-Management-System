@@ -277,7 +277,7 @@ def add_book():
             if cursor.fetchone():
                 cursor.close()
                 conn.close()
-                return "❌ Book already exists with this RFID UID."
+                return " Book already exists with this RFID UID."
 
             # Check duplicate Book Number
             cursor.execute(
@@ -288,7 +288,7 @@ def add_book():
             if cursor.fetchone():
                 cursor.close()
                 conn.close()
-                return "❌ Book Number already exists."
+                return " Book Number already exists."
 
             # Insert Book
             cursor.execute("""
@@ -298,7 +298,6 @@ def add_book():
                     book_number,
                     book_name,
                     author,
-                    subject,
                     status,
                     active,
                     issue_count
