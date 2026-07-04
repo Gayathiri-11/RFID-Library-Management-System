@@ -373,12 +373,10 @@ def check_book():
     cursor.execute("""
         SELECT
         book_name,
-        author,
-        category,
         COUNT(*) AS total_books,
         SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available_books
         FROM books
-        GROUP BY book_name, author, category
+        GROUP BY book_name,
         ORDER BY book_name
         """)
 
