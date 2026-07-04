@@ -296,8 +296,6 @@ def add_book():
                     book_number,
                     book_name,
                     author,
-                    category,
-                    subject,
                     status,
                     active,
                     issue_count
@@ -311,8 +309,6 @@ def add_book():
                 book_number,
                 book_name,
                 author,
-                category,
-                subject,
                 "Available",
                 1,
                 0
