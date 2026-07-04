@@ -349,39 +349,41 @@ def check_book_status(uid):
         return {"status": "NOT_FOUND"}
 
     return {"status": book["status"]}
-@books_bp.route("/check_book", methods=["GET","POST"])
+@books_bp.route("/check_book", methods=["GET", "POST"])
 def check_book():
 
-    conn=get_connection()
-    cursor=conn.cursor(dictionary=True)
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
 
-    book=None
+    book = None
 
-    if request.method=="POST":
+    if request.method == "POST":
 
-        keyword=request.form["keyword"]
+        keyword = request.form["keyword"]
 
         cursor.execute("""
-        SELECT *
-        FROM books
-        WHERE uid=%s
-        OR book_number=%s
-        OR book_name=%s
-        """,(keyword,keyword,keyword))
+            SELECT *
+            FROM books
+            WHERE uid=%s
+               OR book_number=%s
+               OR book_name=%s
+        """, (keyword, keyword, keyword))
 
-        book=cursor.fetchone()
+        book = cursor.fetchone()
+
     cursor.execute("""
         SELECT
-        book_name,
-        COUNT(*) AS total_books,
-        SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available_books
+            book_name,
+            COUNT(*) AS total_books,
+            SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) AS available_books
         FROM books
-        GROUP BY book_name,
+        GROUP BY book_name
         ORDER BY book_name
-        """)
+    """)
 
     book_summary = cursor.fetchall()
 
+    cursor.close()
     conn.close()
 
     return render_template(
