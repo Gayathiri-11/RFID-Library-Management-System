@@ -418,8 +418,6 @@ def book_statistics():
             book_number,
             book_name,
             author,
-            category,
-            subject,
             issue_count
         FROM books
         ORDER BY issue_count DESC
