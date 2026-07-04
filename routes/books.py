@@ -262,9 +262,7 @@ def add_book():
         book_number = request.form["book_number"].strip()
         book_name = request.form["book_name"].strip()
         author = request.form["author"].strip()
-        category = request.form["category"]
-        subject = request.form["subject"]
-
+        
         conn = get_connection()
         cursor = conn.cursor()
 

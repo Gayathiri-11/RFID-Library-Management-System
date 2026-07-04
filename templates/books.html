@@ -211,19 +211,6 @@ type="text"
 name="search"
 placeholder="Search Book Number, Name, Author..."
 value="{{ search }}">
-
-<select name="category">
-    <option value="">All Categories</option>
-
-    <option value="Text Book" {% if category=="Text Book" %}selected{% endif %}>Text Book</option>
-
-    <option value="Reference" {% if category=="Reference" %}selected{% endif %}>Reference</option>
-
-    <option value="Magazine" {% if category=="Magazine" %}selected{% endif %}>Magazine</option>
-
-    <option value="Project" {% if category=="Project" %}selected{% endif %}>Project</option>
-</select>
-
 <select name="status">
 
 <option value="">All Status</option>
