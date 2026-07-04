@@ -306,14 +306,13 @@ def add_book():
                 )
                 VALUES
                 (
-                    %s,%s,%s,%s,%s,%s,%s,%s
+                    %s,%s,%s,%s,%s,%s,%s
                 )
             """, (
                 uid,
                 book_number,
                 book_name,
                 author,
-                subject,
                 "Available",
                 1,
                 0
