@@ -33,6 +33,6 @@ def login():
 
     return render_template("login.html")
 
-@app.route("/logout")
+@auth_bp.route("/logout")
 def logout():
     return redirect("/login")
