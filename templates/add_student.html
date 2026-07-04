@@ -131,6 +131,8 @@
 <script>
 function showToast() {
 
+    alert("Toast Function Called");
+
     var toast = document.getElementById("toast");
 
     toast.innerHTML = "Student Added Successfully";
@@ -138,12 +140,9 @@ function showToast() {
     toast.classList.add("show");
 
     setTimeout(function () {
-
         toast.classList.remove("show");
-
-        window.location.href = "/students";
-
-    }, 2000);
+        window.location.href="/students";
+    },2000);
 }
 </script>
 {% if success %}
