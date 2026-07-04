@@ -262,21 +262,23 @@ def add_book():
         book_number = request.form["book_number"].strip()
         book_name = request.form["book_name"].strip()
         author = request.form["author"].strip()
-        
+        subject = request.form["subject"].strip()
+
         conn = get_connection()
         cursor = conn.cursor()
 
         try:
 
-            # Check duplicate UID
+            # Check duplicate RFID UID
             cursor.execute(
                 "SELECT uid FROM books WHERE uid=%s",
                 (uid,)
             )
 
             if cursor.fetchone():
+                cursor.close()
                 conn.close()
-                return "Book already exists with this RFID UID."
+                return "❌ Book already exists with this RFID UID."
 
             # Check duplicate Book Number
             cursor.execute(
@@ -285,8 +287,9 @@ def add_book():
             )
 
             if cursor.fetchone():
+                cursor.close()
                 conn.close()
-                return "Book Number already exists."
+                return "❌ Book Number already exists."
 
             # Insert Book
             cursor.execute("""
@@ -296,25 +299,29 @@ def add_book():
                     book_number,
                     book_name,
                     author,
+                    subject,
                     status,
                     active,
                     issue_count
                 )
                 VALUES
                 (
-                    %s,%s,%s,%s,%s,%s,%s,
+                    %s,%s,%s,%s,%s,%s,%s,%s
                 )
-            """,(
+            """, (
                 uid,
                 book_number,
                 book_name,
                 author,
+                subject,
                 "Available",
                 1,
                 0
             ))
 
             conn.commit()
+
+            cursor.close()
             conn.close()
 
             return render_template(
@@ -325,9 +332,10 @@ def add_book():
         except Exception as e:
 
             conn.rollback()
+            cursor.close()
             conn.close()
 
-            return f"Error Adding Book : {e}"
+            return f"Error Adding Book: {e}"
 
     return render_template("add_book.html")
 @books_bp.route("/check_book/<uid>")
