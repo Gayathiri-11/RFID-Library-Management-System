@@ -9,14 +9,16 @@ from routes.students import students_bp
 from routes.transactions import transactions_bp
 from routes.dashboard import dashboard_bp
 from routes.reports import reports_bp
-from routes.rfid import rfid_bp   # <-- ADD THIS
+from routes.rfid import rfid_bp   
+from routes.auth import auth_bp
 
+app.register_blueprint(auth_bp)
 app.register_blueprint(books_bp)
 app.register_blueprint(students_bp)
 app.register_blueprint(transactions_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(reports_bp)
-app.register_blueprint(rfid_bp)   # <-- ADD THIS
+app.register_blueprint(rfid_bp)  
 
 
 @app.route("/")
