@@ -8,7 +8,7 @@ if os.environ.get("RENDER"):
     arduino = None
 else:
     try:
-        arduino = serial.Serial("COM5", 9600, timeout=1)
+        arduino = serial.Serial("COM7c", 9600, timeout=1)
         time.sleep(2)
         print("Arduino Connected")
     except Exception as e:
