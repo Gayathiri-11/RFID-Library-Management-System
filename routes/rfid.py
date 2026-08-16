@@ -10,27 +10,77 @@ rfid_bp = Blueprint("rfid", __name__)
 # -----------------------------
 @rfid_bp.route("/scan_uid")
 def scan_uid_route():
+    try:
+        uid = scan_uid()
 
-    uid = scan_uid()
-    print("returning: ",uid)
-    
-    return jsonify({
-        "uid": uid
-    })
+        print("RFID UID:", uid)
+
+        return jsonify({
+            "uid": uid
+        })
+
+    except Exception as e:
+        print("RFID scan error:", e)
+
+        return jsonify({
+            "uid": "",
+            "error": str(e)
+        }), 500
 
 
 # -----------------------------
-# Get UID (Used for Auto Scan)
+# Get UID
 # -----------------------------
 @rfid_bp.route("/get_uid")
 def get_uid():
+    try:
+        uid = scan_uid()
 
-    uid = scan_uid()
+        if not uid or uid == "RFID_NOT_CONNECTED":
+            return jsonify({
+                "uid": ""
+            })
 
-    if uid == "RFID_NOT_CONNECTED":
-        return ""
+        return jsonify({
+            "uid": uid
+        })
 
-    return uid
+    except Exception as e:
+        print("Get UID error:", e)
+
+        return jsonify({
+            "uid": "",
+            "error": str(e)
+        }), 500
+
+
+# -----------------------------
+# RFID API
+# Used by Issue Book page
+# -----------------------------
+@rfid_bp.route("/api/rfid")
+def api_rfid():
+    try:
+        uid = scan_uid()
+
+        print("API RFID UID:", uid)
+
+        if not uid or uid == "RFID_NOT_CONNECTED":
+            return jsonify({
+                "uid": ""
+            })
+
+        return jsonify({
+            "uid": uid
+        })
+
+    except Exception as e:
+        print("RFID API error:", e)
+
+        return jsonify({
+            "uid": "",
+            "error": str(e)
+        }), 500
 
 
 # -----------------------------
@@ -38,7 +88,6 @@ def get_uid():
 # -----------------------------
 @rfid_bp.route("/assign_rfid")
 def assign_rfid():
-
     return render_template("assign_rfid.html")
 
 
@@ -48,26 +97,41 @@ def assign_rfid():
 @rfid_bp.route("/get_book_details/<book_number>")
 def get_book_details(book_number):
 
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn = None
+    cursor = None
 
-    cursor.execute("""
-        SELECT
-            book_number,
-            book_name,
-            author,
-            category,
-            uid
-        FROM books
-        WHERE book_number=%s
-    """, (book_number,))
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
 
-    book = cursor.fetchone()
+        cursor.execute("""
+            SELECT
+                book_number,
+                book_name,
+                author,
+                category,
+                uid
+            FROM books
+            WHERE book_number = %s
+        """, (book_number,))
 
-    cursor.close()
-    conn.close()
+        book = cursor.fetchone()
 
-    if book:
-        return jsonify(book)
+        if book:
+            return jsonify(book)
 
-    return jsonify({})
+        return jsonify({})
+
+    except Exception as e:
+        print("Get book details error:", e)
+
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
