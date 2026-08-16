@@ -1,22 +1,65 @@
 from flask import Blueprint, render_template, jsonify, request
 from database.db import get_connection
-from rfid import scan_uid
 
 rfid_bp = Blueprint("rfid", __name__)
+
+# Stores the latest RFID UID received from the Windows PC
+latest_rfid_uid = ""
+
+
+# -----------------------------
+# Receive RFID UID from PC bridge
+# -----------------------------
+@rfid_bp.route("/api/rfid/update", methods=["POST"])
+def update_rfid():
+    global latest_rfid_uid
+
+    try:
+        data = request.get_json(silent=True)
+
+        if not data or "uid" not in data:
+            return jsonify({
+                "success": False,
+                "message": "UID missing"
+            }), 400
+
+        uid = str(data["uid"]).strip()
+
+        if not uid:
+            return jsonify({
+                "success": False,
+                "message": "Empty UID"
+            }), 400
+
+        latest_rfid_uid = uid
+
+        print("RFID UID received from PC:", latest_rfid_uid)
+
+        return jsonify({
+            "success": True,
+            "uid": latest_rfid_uid
+        })
+
+    except Exception as e:
+        print("RFID update error:", e)
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 
 # -----------------------------
 # Scan RFID
+# Used by Add Book / other pages
 # -----------------------------
 @rfid_bp.route("/scan_uid")
 def scan_uid_route():
     try:
-        uid = scan_uid()
-
-        print("RFID UID:", uid)
+        print("RFID UID:", latest_rfid_uid)
 
         return jsonify({
-            "uid": uid
+            "uid": latest_rfid_uid
         })
 
     except Exception as e:
@@ -34,15 +77,10 @@ def scan_uid_route():
 @rfid_bp.route("/get_uid")
 def get_uid():
     try:
-        uid = scan_uid()
-
-        if not uid or uid == "RFID_NOT_CONNECTED":
-            return jsonify({
-                "uid": ""
-            })
+        print("Get UID:", latest_rfid_uid)
 
         return jsonify({
-            "uid": uid
+            "uid": latest_rfid_uid
         })
 
     except Exception as e:
@@ -61,17 +99,10 @@ def get_uid():
 @rfid_bp.route("/api/rfid")
 def api_rfid():
     try:
-        uid = scan_uid()
-
-        print("API RFID UID:", uid)
-
-        if not uid or uid == "RFID_NOT_CONNECTED":
-            return jsonify({
-                "uid": ""
-            })
+        print("API RFID UID:", latest_rfid_uid)
 
         return jsonify({
-            "uid": uid
+            "uid": latest_rfid_uid
         })
 
     except Exception as e:

@@ -24,6 +24,9 @@ app.register_blueprint(rfid_bp)
 @app.route("/")
 def home():
     return render_template("dashboard.html")
+@app.route("/issue")
+def issue_book():
+    return render_template("issue_book.html")
 
 
 if __name__ == "__main__":
