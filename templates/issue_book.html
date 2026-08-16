@@ -1,54 +1,222 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Book</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .scan-btn {
+            background: #0066cc;
+            color: white;
+        }
+
+        .issue-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #statusMsg {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Issue Book</h1>
+
+    <form method="POST" action="/issue_book">
+
+        <label for="roll_number">Student Roll Number</label>
+
+        <input
+            type="text"
+            id="roll_number"
+            name="roll_number"
+            placeholder="Enter student roll number"
+            required
+        >
+
+        <label for="uid">RFID UID</label>
+
+        <input
+            type="text"
+            id="uid"
+            name="uid"
+            placeholder="Scan RFID tag"
+            readonly
+            required
+        >
+
+        <button
+            type="button"
+            class="scan-btn"
+            onclick="scanRFID()">
+            Scan RFID
+        </button>
+
+        <div id="statusMsg"></div>
+
+        <button
+            type="submit"
+            class="issue-btn">
+            Issue Book
+        </button>
+
+    </form>
+
+</div>
+
 <script>
 function scanRFID() {
 
-    document.getElementById("statusMsg").innerHTML =
-        "Waiting for RFID tag...";
+    const statusMsg = document.getElementById("statusMsg");
+    const uidField = document.getElementById("uid");
 
-    document.getElementById("statusMsg").style.color = "#0066cc";
+    statusMsg.innerHTML = "Waiting for RFID tag...";
+    statusMsg.style.color = "#0066cc";
 
-    const checkUID = setInterval(() => {
+    const checkUID = setInterval(function () {
 
-        fetch('/api/rfid')
-        .then(response => response.json())
-        .then(data => {
+        fetch("/api/rfid")
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error("RFID API error: " + response.status);
+                }
+                return response.json();
+            })
+            .then(function(data) {
 
-            if (data.uid && data.uid.trim() !== "") {
+                if (data.uid && data.uid.trim() !== "") {
+
+                    clearInterval(checkUID);
+
+                    const uid = data.uid.trim();
+
+                    uidField.value = uid;
+
+                    return fetch(
+                        "/check_book/" + encodeURIComponent(uid)
+                    );
+                }
+
+                return null;
+            })
+            .then(function(response) {
+
+                if (!response) {
+                    return null;
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Book status error: " + response.status
+                    );
+                }
+
+                return response.json();
+            })
+            .then(function(book) {
+
+                if (!book) {
+                    return;
+                }
+
+                if (book.status === "Available") {
+
+                    statusMsg.innerHTML =
+                        "🟢 Book is Available";
+
+                    statusMsg.style.color = "green";
+
+                } else if (book.status === "Issued") {
+
+                    statusMsg.innerHTML =
+                        "🔴 Book Already Issued";
+
+                    statusMsg.style.color = "red";
+
+                } else {
+
+                    statusMsg.innerHTML =
+                        "⚠ Book Not Found";
+
+                    statusMsg.style.color = "orange";
+                }
+            })
+            .catch(function(error) {
 
                 clearInterval(checkUID);
 
-                let uid = data.uid.trim();
+                console.error("RFID error:", error);
 
-                document.getElementById('uid').value = uid;
+                statusMsg.innerHTML =
+                    "RFID connection failed";
 
-                fetch('/check_book/' + encodeURIComponent(uid))
-                .then(res => res.json())
-                .then(book => {
-
-                    let msg = document.getElementById("statusMsg");
-
-                    if (book.status === "Available") {
-                        msg.innerHTML = "🟢 Book is Available";
-                        msg.style.color = "green";
-                    }
-                    else if (book.status === "Issued") {
-                        msg.innerHTML = "🔴 Book Already Issued";
-                        msg.style.color = "red";
-                    }
-                    else {
-                        msg.innerHTML = "⚠ Book Not Found";
-                        msg.style.color = "orange";
-                    }
-                });
-            }
-        })
-        .catch(error => {
-            clearInterval(checkUID);
-            console.error(error);
-            document.getElementById("statusMsg").innerHTML =
-                "RFID connection failed";
-            document.getElementById("statusMsg").style.color = "red";
-        });
+                statusMsg.style.color = "red";
+            });
 
     }, 1000);
 }
 </script>
+
+</body>
+</html>
+```
