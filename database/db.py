@@ -8,7 +8,8 @@ def get_connection():
         user=os.environ.get("TIDB_USER"),
         password=os.environ.get("TIDB_PASSWORD"),
         database=os.environ.get("TIDB_DATABASE"),
-        ssl_ca=os.environ.get("TIDB_SSL_CA"),
+
+        ssl_ca="/etc/secrets/ca.pem",
         ssl_verify_cert=True,
         ssl_verify_identity=True
     )
