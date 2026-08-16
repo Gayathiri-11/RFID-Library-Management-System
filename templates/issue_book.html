@@ -1,3 +1,4 @@
+<script>
 function scanRFID() {
 
     document.getElementById("statusMsg").innerHTML =
@@ -19,7 +20,6 @@ function scanRFID() {
 
                 document.getElementById('uid').value = uid;
 
-                // Check book status
                 fetch('/check_book/' + encodeURIComponent(uid))
                 .then(res => res.json())
                 .then(book => {
@@ -27,41 +27,28 @@ function scanRFID() {
                     let msg = document.getElementById("statusMsg");
 
                     if (book.status === "Available") {
-
                         msg.innerHTML = "🟢 Book is Available";
                         msg.style.color = "green";
-
                     }
                     else if (book.status === "Issued") {
-
                         msg.innerHTML = "🔴 Book Already Issued";
                         msg.style.color = "red";
-
                     }
                     else {
-
                         msg.innerHTML = "⚠ Book Not Found";
                         msg.style.color = "orange";
-
                     }
-
                 });
-
             }
-
         })
         .catch(error => {
-
             clearInterval(checkUID);
-
             console.error(error);
-
             document.getElementById("statusMsg").innerHTML =
                 "RFID connection failed";
-
             document.getElementById("statusMsg").style.color = "red";
-
         });
 
     }, 1000);
 }
+</script>
